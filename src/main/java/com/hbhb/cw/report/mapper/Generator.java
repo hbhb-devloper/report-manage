@@ -30,7 +30,7 @@
 //    /**
 //     * 数据库表名
 //     */
-//    private static final String TABLE_NAME = "report";
+//    private static final String TABLE_NAME = "report_file";
 //
 //    public static void main(String[] args) {
 //        // 设置自定义模版路径

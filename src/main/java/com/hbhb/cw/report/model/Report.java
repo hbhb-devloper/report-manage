@@ -17,6 +17,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 public class Report implements Serializable {
+    private static final long serialVersionUID = -5833182136301658132L;
     private Long id;
     /**
      * 上报单位

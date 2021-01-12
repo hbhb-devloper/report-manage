@@ -1,13 +1,14 @@
 package com.hbhb.cw.report.model;
 
+import org.beetl.sql.annotation.entity.AutoID;
+
+import java.io.Serializable;
+import java.util.Date;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-
-import java.io.Serializable;
-import java.util.Date;
 
 /**
  * @author wangxiaogang
@@ -18,19 +19,24 @@ import java.util.Date;
 @Builder
 public class Report implements Serializable {
     private static final long serialVersionUID = -5833182136301658132L;
+    @AutoID
     private Long id;
     /**
      * 上报单位
      */
     private Integer unitId;
     /**
+     * 营业厅id
+     */
+    private Long hallId;
+    /**
      * 管理内容id
      */
-    private Integer manageId;
+    private Long manageId;
     /**
      * 报表内容id
      */
-    private Integer categoryId;
+    private Long categoryId;
     /**
      * 周期
      */
@@ -38,7 +44,7 @@ public class Report implements Serializable {
     /**
      * 创建人
      */
-    private String createBy;
+    private Integer founder;
     /**
      * 创建时间
      */
@@ -54,7 +60,7 @@ public class Report implements Serializable {
     /**
      * 有无业务（0-没有，1-有）
      */
-    private Integer hasBiz;
+    private Boolean hasBiz;
     /**
      * 报表类型（0-分公司报表信息，1-营业厅报表类型）
      */

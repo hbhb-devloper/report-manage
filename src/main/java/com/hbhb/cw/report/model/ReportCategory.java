@@ -1,12 +1,12 @@
 package com.hbhb.cw.report.model;
 
+import java.io.Serializable;
+import java.util.Date;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
-import java.util.Date;
 
 /**
  * @author wangxiaogang
@@ -17,7 +17,7 @@ import java.util.Date;
 @Builder
 public class ReportCategory  implements Serializable {
     private static final long serialVersionUID = -3985217336222172555L;
-    private Integer id;
+    private Long id;
     /**
      * 报表名称
      */
@@ -26,6 +26,14 @@ public class ReportCategory  implements Serializable {
      * 备注
      */
     private String remark;
+    /**
+     * 报表内容id
+     */
+    private Long manageId;
+    /**
+     * 是否启用
+     */
+    private boolean state;
     /**
      * 修改时间
      */

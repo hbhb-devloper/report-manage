@@ -1,10 +1,13 @@
 package com.hbhb.cw.report.web.controller;
 
+import com.hbhb.core.utils.ExcelUtil;
 import com.hbhb.cw.report.service.ReportService;
+import com.hbhb.cw.report.web.vo.ExcelInfoVO;
 import com.hbhb.cw.report.web.vo.ReportInitVO;
 import com.hbhb.cw.report.web.vo.ReportReqVO;
 import com.hbhb.cw.report.web.vo.ReportResVO;
 import com.hbhb.cw.report.web.vo.ReportVO;
+import com.hbhb.cw.report.web.vo.UserImageVO;
 import com.hbhb.web.annotation.UserId;
 
 import org.beetl.sql.core.page.PageResult;
@@ -15,7 +18,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -55,5 +63,15 @@ public class ReportController {
     public void toApprover(@RequestBody ReportInitVO reportApproveVO,
                            @Parameter(hidden = true) @UserId Integer userId) {
         reportService.toApprover(reportApproveVO, userId);
+    }
+
+    @Operation(summary = "导出")
+    @PostMapping("/export")
+    public void exportBusiness(HttpServletRequest request, HttpServletResponse response, Long reportId) {
+        ExcelInfoVO excelInfo = reportService.getExcelInfo(reportId);
+        List<UserImageVO> list = new ArrayList<>();
+        String fileName = ExcelUtil.encodingFileName(request, excelInfo.getFileName());
+        ExcelUtil.export2TemplateWithDate(response, UserImageVO.class, fileName, "Sheet1",
+                excelInfo.getPath(), list);
     }
 }

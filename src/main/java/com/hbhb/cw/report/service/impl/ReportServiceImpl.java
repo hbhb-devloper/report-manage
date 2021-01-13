@@ -21,6 +21,7 @@ import com.hbhb.cw.report.model.ReportFile;
 import com.hbhb.cw.report.model.ReportFlow;
 import com.hbhb.cw.report.model.ReportManage;
 import com.hbhb.cw.report.model.ReportNotice;
+import com.hbhb.cw.report.rpc.FileApiExp;
 import com.hbhb.cw.report.rpc.FlowApiExp;
 import com.hbhb.cw.report.rpc.FlowNodeApiExp;
 import com.hbhb.cw.report.rpc.FlowNodePropApiExp;
@@ -29,11 +30,13 @@ import com.hbhb.cw.report.rpc.FlowRoleUserApiExp;
 import com.hbhb.cw.report.rpc.SysUserApiExp;
 import com.hbhb.cw.report.rpc.UnitApiExp;
 import com.hbhb.cw.report.service.ReportService;
+import com.hbhb.cw.report.web.vo.ExcelInfoVO;
 import com.hbhb.cw.report.web.vo.ReportFileVO;
 import com.hbhb.cw.report.web.vo.ReportInitVO;
 import com.hbhb.cw.report.web.vo.ReportReqVO;
 import com.hbhb.cw.report.web.vo.ReportResVO;
 import com.hbhb.cw.report.web.vo.ReportVO;
+import com.hbhb.cw.report.web.vo.UserImageVO;
 import com.hbhb.cw.systemcenter.enums.UnitEnum;
 import com.hbhb.cw.systemcenter.vo.UserInfo;
 
@@ -87,6 +90,8 @@ public class ReportServiceImpl implements ReportService {
     private ReportCategoryMapper reportCategoryMapper;
     @Resource
     private ReportNoticeMapper reportNoticeMapper;
+    @Resource
+    private FileApiExp fileApiExp;
 
     @Override
     public PageResult<ReportResVO> getReportList(ReportReqVO reportReqVO, Integer pageNum, Integer pageSize) {
@@ -129,6 +134,10 @@ public class ReportServiceImpl implements ReportService {
             }
             reportFileMapper.insertBatch(reportFiles);
         }
+        toApprover(ReportInitVO.builder()
+                .flowTypeId(reportVO.getFlowTypeId())
+                .reportId(report.getId())
+                .userId(userId).build(), userId);
     }
 
     @Override
@@ -180,6 +189,36 @@ public class ReportServiceImpl implements ReportService {
         report.setState(NodeState.APPROVING.value());
         report.setFounder(initVO.getUserId());
         reportMapper.updateTemplateById(report);
+    }
+
+    @Override
+    public ExcelInfoVO getExcelInfo(Long reportId) {
+        // 通过id得到文件路径
+        List<ReportFile> list = reportFileMapper.createLambdaQuery()
+                .andEq(ReportFile::getReportId, reportId)
+                .select();
+        List<String> pathList = new ArrayList<>();
+        List<String> nameList = new ArrayList<>();
+        List<String> imageList = new ArrayList<>();
+        for (ReportFile reportFile : list) {
+            pathList.add(fileApiExp.getFileInfo(reportFile.getFileId()).getFilePath());
+            nameList.add(reportFile.getFileName());
+        }
+        ExcelInfoVO excelInfoVO = new ExcelInfoVO();
+//        excelInfoVO.setPathList(pathList);
+//        excelInfoVO.setFileNameList(nameList);
+        // 通过报表信息id得到节点信息和相关节点的审批用户
+        List<ReportFlow> flowList = reportFlowMapper.createLambdaQuery()
+                .andEq(ReportFlow::getReportId, reportId)
+                .select();
+        UserImageVO userImageVO = new UserImageVO();
+        for (ReportFlow reportFlow : flowList) {
+            if (reportFlow.getUserId() == null) {
+                break;
+            }
+            imageList.add(reportFlow.getUserId().toString());
+        }
+        return null;
     }
 
     /**

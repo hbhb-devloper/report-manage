@@ -43,6 +43,9 @@ public class ReportVO implements Serializable {
     @Schema(description = "报表类型（0-分公司报表信息，1-营业厅报表类型）")
     private Integer type;
 
+    @Schema(description = "流程类型id")
+    Long flowTypeId;
+
     @Schema(description = "附件")
     private List<ReportFileVO> files;
 

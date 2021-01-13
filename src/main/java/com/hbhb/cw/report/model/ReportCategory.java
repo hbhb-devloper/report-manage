@@ -1,12 +1,12 @@
 package com.hbhb.cw.report.model;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author wangxiaogang
@@ -33,7 +33,7 @@ public class ReportCategory  implements Serializable {
     /**
      * 是否启用
      */
-    private boolean state;
+    private Boolean state;
     /**
      * 修改时间
      */

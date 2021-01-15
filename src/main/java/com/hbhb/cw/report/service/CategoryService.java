@@ -40,4 +40,12 @@ public interface CategoryService {
      * @return 名称列表
      */
     List<CategoryVO> getCategory(Long manageId);
+
+    /**
+     * 跟据报表名称id获取详情
+     *
+     * @param id id
+     * @return 报表名称详情
+     */
+    CategoryResVO getCategoryInfo(Long id);
 }

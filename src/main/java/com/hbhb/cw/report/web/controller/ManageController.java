@@ -37,7 +37,7 @@ public class ManageController {
     }
 
     @Operation(summary = "报表管理id获取详情")
-    @GetMapping("/list")
+    @GetMapping("/info")
     public List<ReportManage> getManage(Long id) {
         return manageService.getManageInfo(id);
     }

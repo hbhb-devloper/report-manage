@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author wangxiaogang
@@ -37,5 +38,8 @@ public class CategoryResVO implements Serializable {
 
     @Schema(description = "修改人")
     private String updateBy;
+
+    @Schema(description = "报表属性")
+    List<PropertyVO> propertyList;
 
 }

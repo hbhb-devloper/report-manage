@@ -50,8 +50,7 @@ public class PropertyController {
 
     @Operation(summary = "跟据条件获取流程id")
     @GetMapping("/flow")
-    public Long getFlowId(PropertyCondVO cond) {
-
+    public List<Long> getFlowId(PropertyCondVO cond) {
         return propertyService.getFlowId(cond);
     }
 }

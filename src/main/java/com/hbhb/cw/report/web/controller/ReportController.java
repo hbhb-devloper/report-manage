@@ -67,9 +67,10 @@ public class ReportController {
 
     @Operation(summary = "导出")
     @PostMapping("/export")
-    public void exportBusiness(HttpServletRequest request, HttpServletResponse response, Long reportId) {
-        ExcelInfoVO excelInfo = reportService.getExcelInfo(reportId);
+    public void exportBusiness(HttpServletRequest request, HttpServletResponse response, Integer fileId, Long reportId) {
+        ExcelInfoVO excelInfo = reportService.getExcelInfo(fileId, reportId);
         List<UserImageVO> list = new ArrayList<>();
+        list.add(excelInfo.getImageVO());
         String fileName = ExcelUtil.encodingFileName(request, excelInfo.getFileName());
         ExcelUtil.export2TemplateWithDate(response, UserImageVO.class, fileName, "Sheet1",
                 excelInfo.getPath(), list);

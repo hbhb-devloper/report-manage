@@ -19,5 +19,5 @@ public interface ReportService {
 
     void toApprover(ReportInitVO reportApproveVO, Integer userId);
 
-    ExcelInfoVO getExcelInfo(Long reportId);
+    ExcelInfoVO getExcelInfo(Integer fileId, Long reportId);
 }

@@ -38,6 +38,7 @@ import com.hbhb.cw.report.web.vo.ReportResVO;
 import com.hbhb.cw.report.web.vo.ReportVO;
 import com.hbhb.cw.report.web.vo.UserImageVO;
 import com.hbhb.cw.systemcenter.enums.UnitEnum;
+import com.hbhb.cw.systemcenter.model.SysFile;
 import com.hbhb.cw.systemcenter.vo.UserInfo;
 
 import org.beetl.sql.core.page.DefaultPageRequest;
@@ -46,6 +47,7 @@ import org.beetl.sql.core.page.PageResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -135,7 +137,7 @@ public class ReportServiceImpl implements ReportService {
             reportFileMapper.insertBatch(reportFiles);
         }
         toApprover(ReportInitVO.builder()
-                .flowTypeId(reportVO.getFlowTypeId())
+                .categoryId(reportVO.getCategoryId())
                 .reportId(report.getId())
                 .userId(userId).build(), userId);
     }
@@ -151,7 +153,7 @@ public class ReportServiceImpl implements ReportService {
             throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
         }
         //  3.获取流程id
-        Long flowId = getRelatedFlow(initVO.getFlowTypeId());
+        Long flowId = getRelatedFlow(initVO.getCategoryId());
         // 通过流程id得到流程节点属性
         List<FlowNodePropVO> flowProps = propApi.getNodeProps(flowId);
         //  4.校验用户发起审批权限
@@ -181,7 +183,7 @@ public class ReportServiceImpl implements ReportService {
                         .receiver(initVO.getUserId())
                         .promoter(initVO.getUserId())
                         .content(inform)
-                        .flowTypeId(initVO.getFlowTypeId())
+                        .flowTypeId(flow.getFlowTypeId())
                         .build());
 
         //  6.更改发票流程状态
@@ -192,42 +194,69 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public ExcelInfoVO getExcelInfo(Long reportId) {
-        // 通过id得到文件路径
-        List<ReportFile> list = reportFileMapper.createLambdaQuery()
+    public ExcelInfoVO getExcelInfo(Integer fileId, Long reportId) {
+        // 通过fileId得到file路径
+        SysFile fileInfo = fileApiExp.getFileInfo(fileId);
+        ExcelInfoVO excelInfoVO = new ExcelInfoVO();
+        String filePath = fileInfo.getFilePath();
+        if (filePath == null) {
+            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
+        }
+        // 判断是否为excel
+        String excel = filePath.substring(filePath.lastIndexOf("."));
+        if (!"xlsx".equals(excel) && !"xls".equals(excel)) {
+            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
+        }
+        excelInfoVO.setPath(filePath);
+        // 通过fileId得到reportFile的fileName
+        List<ReportFile> reportFileList = reportFileMapper.createLambdaQuery()
                 .andEq(ReportFile::getReportId, reportId)
                 .select();
-        List<String> pathList = new ArrayList<>();
-        List<String> nameList = new ArrayList<>();
-        List<String> imageList = new ArrayList<>();
-        for (ReportFile reportFile : list) {
-            pathList.add(fileApiExp.getFileInfo(reportFile.getFileId()).getFilePath());
-            nameList.add(reportFile.getFileName());
+        if (reportFileList.size() == 0) {
+            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
         }
-        ExcelInfoVO excelInfoVO = new ExcelInfoVO();
-//        excelInfoVO.setPathList(pathList);
-//        excelInfoVO.setFileNameList(nameList);
+        excelInfoVO.setFileName(reportFileList.get(0).getFileName());
         // 通过报表信息id得到节点信息和相关节点的审批用户
         List<ReportFlow> flowList = reportFlowMapper.createLambdaQuery()
                 .andEq(ReportFlow::getReportId, reportId)
                 .select();
+        // userId => image
+        Map<Integer, URL> map = new HashMap<>();
         UserImageVO userImageVO = new UserImageVO();
-        for (ReportFlow reportFlow : flowList) {
-            if (reportFlow.getUserId() == null) {
-                break;
-            }
-            imageList.add(reportFlow.getUserId().toString());
+        // 获取图片赋值
+        if (flowList.size() != 0) {
+            userImageVO.setFifthName(flowList.get(0).getRoleDesc());
+            userImageVO.setUrl1(map.get(flowList.get(0).getUserId()));
         }
-        return null;
+        if (flowList.size() >= 2) {
+            userImageVO.setFifthName(flowList.get(1).getRoleDesc());
+            userImageVO.setUrl2(map.get(flowList.get(1).getUserId()));
+        }
+        if (flowList.size() >= 3) {
+            userImageVO.setFifthName(flowList.get(2).getRoleDesc());
+            userImageVO.setUrl3(map.get(flowList.get(2).getUserId()));
+        }
+        if (flowList.size() >= 4) {
+            userImageVO.setFifthName(flowList.get(3).getRoleDesc());
+            userImageVO.setUrl4(map.get(flowList.get(3).getUserId()));
+        }
+        if (flowList.size() >= 5) {
+            userImageVO.setFifthName(flowList.get(4).getRoleDesc());
+            userImageVO.setUrl5(map.get(flowList.get(4).getUserId()));
+        }
+        excelInfoVO.setImageVO(userImageVO);
+        return excelInfoVO;
     }
 
     /**
      * 校验流程是否匹配
      */
-    private Long getRelatedFlow(Long flowTypeId) {
+    private Long getRelatedFlow(Long categoryId) {
+        // 通过报表名称id得到报表流程id
+
         // 流程节点数量 => 流程id
         Map<Long, Long> flowMap = new HashMap<>(5);
-        List<Flow> flowList = flowApi.getFlowsByTypeId(flowTypeId);
+        List<Flow> flowList = flowApi.getFlowsByTypeId(categoryId);
         // 流程有效性校验（物料制作流程存在1条）
         if (flowList.size() == 0) {
             throw new ReportException(ReportErrorCode.NOT_EXIST_FLOW);
@@ -312,5 +341,9 @@ public class ReportServiceImpl implements ReportService {
                     .build());
         }
         reportFlowMapper.insertBatch(reportFlowList);
+    }
+
+    public static void main(String[] args) {
+
     }
 }

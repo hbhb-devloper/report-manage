@@ -2,6 +2,7 @@ package com.hbhb.cw.report.web.vo;
 
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import com.alibaba.excel.annotation.write.style.ContentRowHeight;
+import com.alibaba.excel.annotation.write.style.HeadRowHeight;
 
 import java.io.Serializable;
 import java.net.URL;
@@ -19,8 +20,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ContentRowHeight(100)
-@ColumnWidth(100 / 8)
+@ContentRowHeight(50)
+@ColumnWidth(30)
+@HeadRowHeight(0)
 public class UserImageVO implements Serializable {
 
     private static final long serialVersionUID = 1695798118204835105L;
@@ -30,9 +32,23 @@ public class UserImageVO implements Serializable {
      *
      * @since 2.1.1
      */
+    private String firstName;
+
     private URL url1;
+
+    private String secondName;
 
     private URL url2;
 
+    private String thirdName;
+
     private URL url3;
+
+    private String fourthName;
+
+    private URL url4;
+
+    private String fifthName;
+
+    private URL url5;
 }

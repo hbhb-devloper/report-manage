@@ -338,8 +338,4 @@ public class ReportServiceImpl implements ReportService {
         }
         reportFlowMapper.insertBatch(reportFlowList);
     }
-
-    public static void main(String[] args) {
-
-    }
 }

@@ -25,6 +25,6 @@ public class ExcelInfoVO implements Serializable {
     @Schema(description = "名称列表")
     private String fileName;
 
-    @Schema(description = "图片列表")
-    private UserImageVO imageVO;
+//    @Schema(description = "图片列表")
+//    private UserImageVO imageVO;
 }

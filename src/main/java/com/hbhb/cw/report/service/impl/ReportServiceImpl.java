@@ -30,15 +30,12 @@ import com.hbhb.cw.report.rpc.FlowRoleUserApiExp;
 import com.hbhb.cw.report.rpc.SysUserApiExp;
 import com.hbhb.cw.report.rpc.UnitApiExp;
 import com.hbhb.cw.report.service.ReportService;
-import com.hbhb.cw.report.web.vo.ExcelInfoVO;
 import com.hbhb.cw.report.web.vo.ReportFileVO;
 import com.hbhb.cw.report.web.vo.ReportInitVO;
 import com.hbhb.cw.report.web.vo.ReportReqVO;
 import com.hbhb.cw.report.web.vo.ReportResVO;
 import com.hbhb.cw.report.web.vo.ReportVO;
-import com.hbhb.cw.report.web.vo.UserImageVO;
 import com.hbhb.cw.systemcenter.enums.UnitEnum;
-import com.hbhb.cw.systemcenter.model.SysFile;
 import com.hbhb.cw.systemcenter.vo.UserInfo;
 
 import org.beetl.sql.core.page.DefaultPageRequest;
@@ -47,7 +44,6 @@ import org.beetl.sql.core.page.PageResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -193,60 +189,60 @@ public class ReportServiceImpl implements ReportService {
         reportMapper.updateTemplateById(report);
     }
 
-    @Override
-    public ExcelInfoVO getExcelInfo(Integer fileId, Long reportId) {
-        // 通过fileId得到file路径
-        SysFile fileInfo = fileApiExp.getFileInfo(fileId);
-        ExcelInfoVO excelInfoVO = new ExcelInfoVO();
-        String filePath = fileInfo.getFilePath();
-        if (filePath == null) {
-            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
-        }
-        // 判断是否为excel
-        String excel = filePath.substring(filePath.lastIndexOf("."));
-        if (!"xlsx".equals(excel) && !"xls".equals(excel)) {
-            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
-        }
-        excelInfoVO.setPath(filePath);
-        // 通过fileId得到reportFile的fileName
-        List<ReportFile> reportFileList = reportFileMapper.createLambdaQuery()
-                .andEq(ReportFile::getReportId, reportId)
-                .select();
-        if (reportFileList.size() == 0) {
-            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
-        }
-        excelInfoVO.setFileName(reportFileList.get(0).getFileName());
-        // 通过报表信息id得到节点信息和相关节点的审批用户
-        List<ReportFlow> flowList = reportFlowMapper.createLambdaQuery()
-                .andEq(ReportFlow::getReportId, reportId)
-                .select();
-        // userId => image
-        Map<Integer, URL> map = new HashMap<>();
-        UserImageVO userImageVO = new UserImageVO();
-        // 获取图片赋值
-        if (flowList.size() != 0) {
-            userImageVO.setFifthName(flowList.get(0).getRoleDesc());
-            userImageVO.setUrl1(map.get(flowList.get(0).getUserId()));
-        }
-        if (flowList.size() >= 2) {
-            userImageVO.setFifthName(flowList.get(1).getRoleDesc());
-            userImageVO.setUrl2(map.get(flowList.get(1).getUserId()));
-        }
-        if (flowList.size() >= 3) {
-            userImageVO.setFifthName(flowList.get(2).getRoleDesc());
-            userImageVO.setUrl3(map.get(flowList.get(2).getUserId()));
-        }
-        if (flowList.size() >= 4) {
-            userImageVO.setFifthName(flowList.get(3).getRoleDesc());
-            userImageVO.setUrl4(map.get(flowList.get(3).getUserId()));
-        }
-        if (flowList.size() >= 5) {
-            userImageVO.setFifthName(flowList.get(4).getRoleDesc());
-            userImageVO.setUrl5(map.get(flowList.get(4).getUserId()));
-        }
-        excelInfoVO.setImageVO(userImageVO);
-        return excelInfoVO;
-    }
+//    @Override
+//    public ExcelInfoVO getExcelInfo(Integer fileId, Long reportId) {
+//        // 通过fileId得到file路径
+//        SysFile fileInfo = fileApiExp.getFileInfo(fileId);
+//        ExcelInfoVO excelInfoVO = new ExcelInfoVO();
+//        String filePath = fileInfo.getFilePath();
+//        if (filePath == null) {
+//            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
+//        }
+//        // 判断是否为excel
+//        String excel = filePath.substring(filePath.lastIndexOf("."));
+//        if (!"xlsx".equals(excel) && !"xls".equals(excel)) {
+//            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
+//        }
+//        excelInfoVO.setPath(filePath);
+//        // 通过fileId得到reportFile的fileName
+//        List<ReportFile> reportFileList = reportFileMapper.createLambdaQuery()
+//                .andEq(ReportFile::getReportId, reportId)
+//                .select();
+//        if (reportFileList.size() == 0) {
+//            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
+//        }
+//        excelInfoVO.setFileName(reportFileList.get(0).getFileName());
+//        // 通过报表信息id得到节点信息和相关节点的审批用户
+//        List<ReportFlow> flowList = reportFlowMapper.createLambdaQuery()
+//                .andEq(ReportFlow::getReportId, reportId)
+//                .select();
+//        // userId => image
+//        Map<Integer, URL> map = new HashMap<>();
+//        UserImageVO userImageVO = new UserImageVO();
+//        // 获取图片赋值
+//        if (flowList.size() != 0) {
+//            userImageVO.setFifthName(flowList.get(0).getRoleDesc());
+//            userImageVO.setUrl1(map.get(flowList.get(0).getUserId()));
+//        }
+//        if (flowList.size() >= 2) {
+//            userImageVO.setFifthName(flowList.get(1).getRoleDesc());
+//            userImageVO.setUrl2(map.get(flowList.get(1).getUserId()));
+//        }
+//        if (flowList.size() >= 3) {
+//            userImageVO.setFifthName(flowList.get(2).getRoleDesc());
+//            userImageVO.setUrl3(map.get(flowList.get(2).getUserId()));
+//        }
+//        if (flowList.size() >= 4) {
+//            userImageVO.setFifthName(flowList.get(3).getRoleDesc());
+//            userImageVO.setUrl4(map.get(flowList.get(3).getUserId()));
+//        }
+//        if (flowList.size() >= 5) {
+//            userImageVO.setFifthName(flowList.get(4).getRoleDesc());
+//            userImageVO.setUrl5(map.get(flowList.get(4).getUserId()));
+//        }
+//        excelInfoVO.setImageVO(userImageVO);
+//        return excelInfoVO;
+//    }
 
     /**
      * 校验流程是否匹配

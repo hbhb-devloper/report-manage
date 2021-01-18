@@ -1,14 +1,19 @@
 package com.hbhb.cw.report.service.impl;
 
 import com.hbhb.core.bean.BeanConverter;
+import com.hbhb.cw.report.enums.Scope;
 import com.hbhb.cw.report.mapper.ReportPropertyMapper;
 import com.hbhb.cw.report.model.ReportProperty;
 import com.hbhb.cw.report.rpc.FlowApiExp;
 import com.hbhb.cw.report.rpc.FlowTypeApiExp;
+import com.hbhb.cw.report.rpc.SysDictApiExp;
 import com.hbhb.cw.report.service.PropertyService;
 import com.hbhb.cw.report.web.vo.PropertyCondVO;
 import com.hbhb.cw.report.web.vo.PropertyReqVO;
 import com.hbhb.cw.report.web.vo.PropertyResVO;
+import com.hbhb.cw.systemcenter.enums.DictCode;
+import com.hbhb.cw.systemcenter.enums.TypeCode;
+import com.hbhb.cw.systemcenter.vo.DictVO;
 import lombok.extern.slf4j.Slf4j;
 import org.beetl.sql.core.page.DefaultPageRequest;
 import org.beetl.sql.core.page.PageRequest;
@@ -17,9 +22,11 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author wangxiaogang
@@ -34,6 +41,8 @@ public class PropertyServiceImpl implements PropertyService {
     private FlowApiExp flowApi;
     @Resource
     private FlowTypeApiExp typeApi;
+    @Resource
+    private SysDictApiExp dictApi;
 
     @Override
     public PageResult<PropertyResVO> getPropertyList(Long categoryId, Integer pageNum, Integer pageSize) {
@@ -59,11 +68,18 @@ public class PropertyServiceImpl implements PropertyService {
         flowIds.addAll(flowTypeSet);
         Map<Long, String> flowMapName = flowApi.getFlowMapName(flowIds);
         Map<Long, String> flowTypeMapName = typeApi.getFlowTypeMapName(flowTypeIds);
-
+        Map<Integer, String> scopeMap = new HashMap<>(5);
+        scopeMap.put(Scope.FILIALE.key(), Scope.FILIALE.value());
+        scopeMap.put(Scope.HALL.key(), Scope.HALL.value());
+        // 周期
+        List<DictVO> dict = dictApi.getDict(TypeCode.REPORT.value(), DictCode.REPORT_PERIOD.value());
+        Map<String, String> periodMap = dict.stream().collect(Collectors.toMap(DictVO::getValue, DictVO::getLabel));
         // 组装
         page.getList().forEach(item -> {
             item.setFlowName(flowMapName.get(item.getFlowId()));
             item.setFlowTypeName(flowTypeMapName.get(item.getFlowTypeId()));
+            item.setScopeName(scopeMap.get(item.getScope()));
+            item.setPeriodName(periodMap.get(item.getPeriod().toString()));
         });
         return page;
     }

@@ -30,6 +30,9 @@ public class CategoryResVO implements Serializable {
     @Schema(description = "报表内容id")
     private Long manageId;
 
+    @Schema(description = "报表内容")
+    private String manageName;
+
     @Schema(description = "是否启用")
     private Boolean state;
 

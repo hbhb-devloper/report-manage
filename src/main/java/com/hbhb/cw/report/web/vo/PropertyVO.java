@@ -25,8 +25,14 @@ public class PropertyVO implements Serializable {
     @Schema(description = "编报范围（0-分公司、1-营业厅）")
     private Integer scope;
 
+    @Schema(description = "编报范围（0-分公司、1-营业厅）")
+    private String scopeName;
+
     @Schema(description = "周期（0-年、1-季、2-月、3-旬、4-日）")
     private Integer period;
+
+    @Schema(description = "周期（0-年、1-季、2-月、3-旬、4-日）")
+    private String periodName;
 
     @Schema(description = "流程类型id")
     private Long flowTypeId;

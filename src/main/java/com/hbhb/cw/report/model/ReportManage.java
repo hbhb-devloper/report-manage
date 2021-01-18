@@ -18,7 +18,7 @@ import java.util.Date;
 
 public class ReportManage implements Serializable {
     private static final long serialVersionUID = -7126654032346120936L;
-    private Integer id;
+    private Long id;
     /**
      * 管理名称
      */

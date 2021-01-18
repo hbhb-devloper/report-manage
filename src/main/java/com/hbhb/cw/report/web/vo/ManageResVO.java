@@ -19,7 +19,7 @@ import java.util.Date;
 public class ManageResVO implements Serializable {
 
     private static final long serialVersionUID = -7738661320365160788L;
-    private Integer id;
+    private Long id;
 
     @Schema(description = "管理名称")
     private String manageName;

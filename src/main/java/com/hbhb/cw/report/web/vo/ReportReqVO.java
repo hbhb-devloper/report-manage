@@ -37,6 +37,9 @@ public class ReportReqVO implements Serializable {
     @Schema(description = "报表状态")
     private Integer categoryState;
 
+    @Schema(description = "流程状态")
+    private String state;
+
     @Schema(description = "周期")
     private String period;
 

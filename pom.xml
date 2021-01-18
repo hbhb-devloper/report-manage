@@ -34,6 +34,11 @@
             <artifactId>message-hub-api</artifactId>
             <version>1.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.hbhb</groupId>
+            <artifactId>report-manage-api</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
 </project>

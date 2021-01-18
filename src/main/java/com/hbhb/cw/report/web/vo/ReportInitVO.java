@@ -23,7 +23,7 @@ public class ReportInitVO implements Serializable {
     private Long reportId;
 
     @Schema(description = "流程类型id")
-    private Long categoryId;
+    private Long flowId;
 
     @Schema(description = "用户id")
     private Integer userId;

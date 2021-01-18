@@ -20,11 +20,11 @@ public class ReportInitVO implements Serializable {
     private static final long serialVersionUID = 5055368662525204854L;
 
     @Schema(description = "项目签报id")
-    Long reportId;
+    private Long reportId;
 
     @Schema(description = "流程类型id")
-    Long flowTypeId;
+    private Long categoryId;
 
     @Schema(description = "用户id")
-    Integer userId;
+    private Integer userId;
 }

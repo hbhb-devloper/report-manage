@@ -1,6 +1,5 @@
 package com.hbhb.cw.report.service;
 
-import com.hbhb.cw.report.web.vo.ExcelInfoVO;
 import com.hbhb.cw.report.web.vo.ReportInitVO;
 import com.hbhb.cw.report.web.vo.ReportReqVO;
 import com.hbhb.cw.report.web.vo.ReportResVO;
@@ -19,5 +18,5 @@ public interface ReportService {
 
     void toApprover(ReportInitVO reportApproveVO, Integer userId);
 
-    ExcelInfoVO getExcelInfo(Long reportId);
+//    ExcelInfoVO getExcelInfo(Integer fileId, Long reportId);
 }

@@ -27,6 +27,7 @@ import com.hbhb.cw.report.rpc.FlowNodeApiExp;
 import com.hbhb.cw.report.rpc.FlowNodePropApiExp;
 import com.hbhb.cw.report.rpc.FlowNoticeApiExp;
 import com.hbhb.cw.report.rpc.FlowRoleUserApiExp;
+import com.hbhb.cw.report.rpc.HallApiExp;
 import com.hbhb.cw.report.rpc.SysUserApiExp;
 import com.hbhb.cw.report.rpc.UnitApiExp;
 import com.hbhb.cw.report.service.PropertyService;
@@ -55,6 +56,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -98,6 +101,8 @@ public class ReportServiceImpl implements ReportService {
     private FileApiExp fileApiExp;
     @Resource
     private PropertyService propertyService;
+    @Resource
+    private HallApiExp hallApi;
 
     @Override
     public PageResult<ReportResVO> getReportList(ReportReqVO reportReqVO, Integer pageNum, Integer pageSize) {
@@ -111,10 +116,71 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
+    public PageResult<ReportResVO> getReportCountList(Boolean flag, ReportReqVO reportReqVO, Integer pageNum, Integer pageSize) {
+        // 得到报表内容详情
+        ReportManage manage = reportManageMapper.single(reportReqVO.getManageId());
+        // 得到报表名称详情
+        ReportCategory category = reportCategoryMapper.single(reportReqVO.getCategoryId());
+        // 获取所有单位
+        List<Integer> unitIds = unitApi.getAllUnitId();
+        Map<Integer, String> unitMap = unitApi.getUnitMapById();
+        // 得到所有营业厅
+        Map<Integer, String> hallMap = hallApi.selectHallByUnitId(reportReqVO.getUnitId());
+        PageRequest<ReportResVO> request = DefaultPageRequest.of(pageNum, pageSize);
+        PageResult<ReportResVO> reportList = reportMapper.selectListByCond(request, reportReqVO);
+        // 如果为单位
+        if (flag) {
+            // unitId => ReportResVO
+            Map<Integer, ReportResVO> map = reportList.getList().stream()
+                    .collect(Collectors.toMap(ReportResVO::getUnitId, Function.identity()));
+            // 判断是否通过
+            for (Integer unitId : unitIds) {
+                if (map.get(unitId) == null) {
+                    reportList.getList().add(ReportResVO.builder()
+                            .manageName(manage.getManageName())
+                            .reportName(category.getReportName())
+                            .relationName(manage.getManageName() + category.getReportName())
+                            .unitId(unitId)
+                            .period(reportReqVO.getPeriod())
+                            .build());
+                }
+            }
+            for (int i = 0; i < reportList.getList().size(); i++) {
+                reportList.getList().get(i).setLineNumber(i + 1L);
+                reportList.getList().get(i).setUnitName(unitMap.get(reportList.getList().get(i).getUnitId()));
+            }
+            // 如果为营业厅
+        } else {
+            // hallId => ReportResVO
+            Map<Long, ReportResVO> map = reportList.getList().stream()
+                    .collect(Collectors.toMap(ReportResVO::getHallId, Function.identity()));
+            // 判断是否通过
+            for (Integer hallId : hallMap.keySet()) {
+                if (map.get(Long.valueOf(hallId)) == null) {
+                    reportList.getList().add(ReportResVO.builder()
+                            .manageName(manage.getManageName())
+                            .reportName(category.getReportName())
+                            .relationName(manage.getManageName() + category.getReportName())
+                            .hallId(Long.valueOf(hallId))
+                            .period(reportReqVO.getPeriod())
+                            .build());
+                }
+            }
+            for (int i = 0; i < reportList.getList().size(); i++) {
+                reportList.getList().get(i).setLineNumber(i + 1L);
+                reportList.getList().get(i).setHallName(hallMap.get(Math.toIntExact(reportList.getList().get(i).getHallId())));
+            }
+        }
+        return reportList;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void addReport(ReportVO reportVO, Integer userId) {
+        // 报表信息
         Report report = Report.builder()
                 .categoryId(reportVO.getCategoryId())
+                .unitId(reportVO.getUnitId())
                 .founder(userId)
                 .createTime(new Date())
                 .hallId(reportVO.getHallId())
@@ -125,9 +191,23 @@ public class ReportServiceImpl implements ReportService {
                 .type(reportVO.getType())
                 .launchTime(new Date())
                 .build();
+        List<Report> reportList = reportMapper.createLambdaQuery()
+                .andEq(Report::getCategoryId, reportVO.getCategoryId())
+                .andEq(Report::getFounder, userId)
+                .andEq(Report::getHallId, reportVO.getHallId())
+                .andEq(Report::getHasBiz, reportVO.getHasBiz())
+                .andEq(Report::getState, 10)
+                .andEq(Report::getManageId, reportVO.getManageId())
+                .andEq(Report::getPeriod, reportVO.getPeriod())
+                .andEq(Report::getType, reportVO.getType())
+                .select();
+        if (reportList == null || reportList.size() == 0) {
+            throw new ReportException(ReportErrorCode.EXCEED_LIMIT_FLOW);
+        }
         reportMapper.insert(report);
         List<ReportFileVO> files = reportVO.getFiles();
-        if (files.size() != 0) {
+        // 判断是否上传附件，新建附件
+        if (files != null && files.size() != 0) {
             List<ReportFile> reportFiles = new ArrayList<>();
             for (ReportFileVO file : files) {
                 reportFiles.add(ReportFile.builder()
@@ -153,15 +233,15 @@ public class ReportServiceImpl implements ReportService {
         toApprover(ReportInitVO.builder()
                 .flowId(flowIds.get(0))
                 .reportId(report.getId())
-                .userId(userId).build(), userId);
+                .userId(27).build());
     }
 
-    @Override
+    //    @Override
     @Transactional(rollbackFor = Exception.class)
-    public void toApprover(ReportInitVO initVO, Integer userId) {
+    public void toApprover(ReportInitVO initVO) {
         Report report = reportMapper.single(initVO.getReportId());
         //  1.判断登录用户是否与申请人一致
-        UserInfo user = sysUserApi.getUserInfoById(userId);
+        UserInfo user = sysUserApi.getUserInfoById(initVO.getUserId());
         UserInfo userInfo = sysUserApi.getUserInfoById(report.getFounder());
         if (!user.getNickName().equals(userInfo.getNickName())) {
             throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
@@ -176,7 +256,7 @@ public class ReportServiceImpl implements ReportService {
             throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
         }
         //  5.同步节点属性
-        syncReportFlow(flowProps, report.getId(), userId);
+        syncReportFlow(flowProps, report.getId(), initVO.getUserId());
         // 得到推送模板
         String inform = noticeApi.getInform(flowProps.get(0).getFlowNodeId()
                 , FlowNodeNoticeState.DEFAULT_REMINDER.value());
@@ -199,8 +279,7 @@ public class ReportServiceImpl implements ReportService {
                         .content(inform)
                         .flowTypeId(flow.getFlowTypeId())
                         .build());
-
-        //  6.更改发票流程状态
+        //  6.更改报表流程状态
         report.setId(initVO.getReportId());
         report.setState(NodeState.APPROVING.value());
         report.setFounder(initVO.getUserId());
@@ -236,6 +315,7 @@ public class ReportServiceImpl implements ReportService {
                 .select();
         // userId => image
         Map<Integer, URL> map = new HashMap<>();
+        // todo 得到图片
         UserImageVO userImageVO = new UserImageVO();
         // 获取图片赋值
         if (flowList.size() != 0) {

@@ -22,7 +22,7 @@ public class ReportReqVO implements Serializable {
     @Schema(description = "上报单位")
     private Integer unitId;
 
-    @Schema(description = "上报单位")
+    @Schema(description = "营业厅id")
     private Long hallId;
 
     @Schema(description = "管理内容Id")

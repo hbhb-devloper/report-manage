@@ -22,7 +22,10 @@ public enum ReportErrorCode {
     // 请指定所有审批人
     NOT_ALL_APPROVERS_ASSIGNED("86009", "not.all.approvers.assigned"),
     // 下一节点未指定审批人，请联系管理员
-    NEXT_NODE_NO_USER("86010", "next.node.no.user"),;
+    NEXT_NODE_NO_USER("86010", "next.node.no.user"),
+    // 该条报表信息已存在请勿重复上传
+    IS_ALREADY_EXISTENCE("86010", "is.already.existence"),
+    ;
 
     private String code;
 

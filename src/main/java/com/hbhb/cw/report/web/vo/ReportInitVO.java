@@ -19,10 +19,10 @@ import lombok.NoArgsConstructor;
 public class ReportInitVO implements Serializable {
     private static final long serialVersionUID = 5055368662525204854L;
 
-    @Schema(description = "项目签报id")
+    @Schema(description = "报表信息id")
     private Long reportId;
 
-    @Schema(description = "流程类型id")
+    @Schema(description = "流程id")
     private Long flowId;
 
     @Schema(description = "用户id")

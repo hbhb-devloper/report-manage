@@ -21,7 +21,7 @@ public class PropertyResVO implements Serializable {
     private Long categoryId;
 
     @Schema(description = "报表名称id")
-    private Long categoryName;
+    private String categoryName;
 
     @Schema(description = "编报范围（0-分公司、1-营业厅）")
     private Integer scope;

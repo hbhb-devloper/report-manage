@@ -21,7 +21,7 @@ public class CategoryVO implements Serializable {
     @Schema(description = "报表名称")
     private String reportName;
     @Schema(description = "启用按月打包(0-否，1-是)")
-    private Boolean hasPage;
+    private Boolean hasPack;
     @Schema(description = "是否启用（0-禁用，1-启用）")
     private Boolean hasEnable;
 }

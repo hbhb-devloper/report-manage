@@ -1,6 +1,6 @@
 package com.hbhb.cw.report.service.impl;
 
-import com.hbhb.core.bean.BeanConverter;
+import com.hbhb.core.utils.DateUtil;
 import com.hbhb.cw.report.enums.Scope;
 import com.hbhb.cw.report.mapper.ReportPropertyMapper;
 import com.hbhb.cw.report.model.ReportProperty;
@@ -64,8 +64,8 @@ public class PropertyServiceImpl implements PropertyService {
 
         // 去重流程类型id
         HashSet<Long> flowTypeSet = new HashSet<>(flowTypeIds);
-        flowIds.clear();
-        flowIds.addAll(flowTypeSet);
+        flowTypeIds.clear();
+        flowTypeIds.addAll(flowTypeSet);
         Map<Long, String> flowMapName = flowApi.getFlowMapName(flowIds);
         Map<Long, String> flowTypeMapName = typeApi.getFlowTypeMapName(flowTypeIds);
         Map<Integer, String> scopeMap = new HashMap<>(5);
@@ -86,7 +86,12 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     public void updateProperty(List<PropertyReqVO> list) {
-        List<ReportProperty> properties = BeanConverter.copyBeanList(list, ReportProperty.class);
+        List<ReportProperty> properties = new ArrayList<>();
+        list.forEach(item -> properties.add(ReportProperty.builder()
+                .id(item.getId())
+                .startTime(DateUtil.string2DateYMD(item.getStartTime()))
+                .endTime(DateUtil.string2DateYMD(item.getEndTime()))
+                .build()));
         propertyMapper.updateBatchTempById(properties);
     }
 

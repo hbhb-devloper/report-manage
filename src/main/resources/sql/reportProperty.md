@@ -13,10 +13,10 @@ select
        date_format(start_time, '%Y-%m-%d') as startTime,
        date_format(end_time, '%Y-%m-%d')   as endTime
  -- @}
-from report_property
+from report_property rp
  left join report_category rc on rp.category_id = rc.id
     -- @where(){
-    --@if(isNotEmpty(categoryId)){
+    -- @if(isNotEmpty(categoryId)){
         category_id = #{categoryId}
     -- @}
     -- @}

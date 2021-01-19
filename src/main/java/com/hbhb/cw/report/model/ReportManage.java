@@ -42,5 +42,5 @@ public class ReportManage implements Serializable {
     /**
      * 启用按月打包(0-否，1-是)
      */
-    private Boolean hasPage;
+    private Boolean hasPack;
 }

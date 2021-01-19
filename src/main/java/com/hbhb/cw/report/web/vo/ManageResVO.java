@@ -37,6 +37,6 @@ public class ManageResVO implements Serializable {
     private Boolean hasEnable;
 
     @Schema(description = "启用按月打包(0-否，1-是)")
-    private Boolean hasPage;
+    private Boolean hasPack;
 
 }

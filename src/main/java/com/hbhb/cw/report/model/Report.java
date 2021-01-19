@@ -30,6 +30,10 @@ public class Report implements Serializable {
      */
     private Long hallId;
     /**
+     * 负责人
+     */
+    private Integer userId;
+    /**
      * 管理内容id
      */
     private Long manageId;

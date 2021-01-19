@@ -14,27 +14,27 @@ selectListByCond
     from report r
              left join report_manage rm on r.manage_id = rm.id
              left join report_category rc on rm.id = rc.manage_id
-    where r.type = #{type}
-    -- @if(isNotEmpty(unitId)){
-      and r.unit_id = #{unitId}
+    where r.type = #{cond.type}
+    -- @if(isNotEmpty(cond.unitId)){
+      and r.unit_id = #{cond.unitId}
     -- @}
-    -- @if(isNotEmpty(hallId)){
-      and r.hall_id = #{hallId}
+    -- @if(isNotEmpty(cond.hallId)){
+      and r.hall_id = #{cond.hallId}
     -- @}
-    -- @if(isNotEmpty(manageId)){
-      and r.manage_id = #{manageId}
+    -- @if(isNotEmpty(cond.manageId)){
+      and r.manage_id = #{cond.manageId}
     -- @}
-    -- @if(isNotEmpty(categoryId)){
-      and r.category_id = #{categoryId}
+    -- @if(isNotEmpty(cond.categoryId)){
+      and r.category_id = #{cond.categoryId}
     -- @}
-    -- @if(isNotEmpty(state)){
-      and r.state = #{state}
+    -- @if(isNotEmpty(cond.state)){
+      and r.state = #{cond.state}
     -- @}
-    -- @if(isNotEmpty(period)){
-      and r.period = #{period}
+    -- @if(isNotEmpty(cond.period)){
+      and r.period = #{cond.period}
     -- @}
-    -- @if(isNotEmpty(relationName)){
-      and concat(rm.manage_name,rc.report_name) like concat ('%',#{relationName},'%')
+    -- @if(isNotEmpty(cond.relationName)){
+      and concat(rm.manage_name,rc.report_name) like concat ('%',#{cond.relationName},'%')
     -- @}
     -- @pageIgnoreTag(){
       group by r.id

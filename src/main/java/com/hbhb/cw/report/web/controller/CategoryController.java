@@ -1,8 +1,8 @@
 package com.hbhb.cw.report.web.controller;
 
+import com.hbhb.api.core.bean.SelectVO;
 import com.hbhb.cw.report.service.CategoryService;
 import com.hbhb.cw.report.web.vo.CategoryResVO;
-import com.hbhb.cw.report.web.vo.CategoryVO;
 import com.hbhb.web.annotation.UserId;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -53,7 +53,7 @@ public class CategoryController {
 
     @Operation(summary = "跟据管理内容获取报表名称信息")
     @GetMapping("/name")
-    public List<CategoryVO> getCategory(Long manageId) {
+    public List<SelectVO> getCategory(Long manageId) {
         return categoryService.getCategory(manageId);
     }
 

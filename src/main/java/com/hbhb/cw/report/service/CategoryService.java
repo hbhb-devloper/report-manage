@@ -1,7 +1,7 @@
 package com.hbhb.cw.report.service;
 
+import com.hbhb.api.core.bean.SelectVO;
 import com.hbhb.cw.report.web.vo.CategoryResVO;
-import com.hbhb.cw.report.web.vo.CategoryVO;
 
 import java.util.List;
 
@@ -39,7 +39,7 @@ public interface CategoryService {
      * @param manageId 管理内容
      * @return 名称列表
      */
-    List<CategoryVO> getCategory(Long manageId);
+    List<SelectVO> getCategory(Long manageId);
 
     /**
      * 跟据报表名称id获取详情

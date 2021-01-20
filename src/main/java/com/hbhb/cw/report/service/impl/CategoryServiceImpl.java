@@ -1,5 +1,6 @@
 package com.hbhb.cw.report.service.impl;
 
+import com.hbhb.api.core.bean.SelectVO;
 import com.hbhb.core.bean.BeanConverter;
 import com.hbhb.core.utils.DateUtil;
 import com.hbhb.cw.report.enums.Scope;
@@ -15,7 +16,6 @@ import com.hbhb.cw.report.rpc.SysDictApiExp;
 import com.hbhb.cw.report.rpc.SysUserApiExp;
 import com.hbhb.cw.report.service.CategoryService;
 import com.hbhb.cw.report.web.vo.CategoryResVO;
-import com.hbhb.cw.report.web.vo.CategoryVO;
 import com.hbhb.cw.report.web.vo.PropertyVO;
 import com.hbhb.cw.systemcenter.enums.DictCode;
 import com.hbhb.cw.systemcenter.enums.TypeCode;
@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -119,13 +120,20 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<CategoryVO> getCategory(Long manageId) {
+    public List<SelectVO> getCategory(Long manageId) {
         List<ReportCategory> select = categoryMapper
                 .createLambdaQuery()
                 .andEq(ReportCategory::getManageId, Query.filterNull(manageId))
                 .andEq(ReportCategory::getState, true)
                 .select();
-        return BeanConverter.copyBeanList(select, CategoryVO.class);
+        return Optional.ofNullable(select)
+                .orElse(new ArrayList<>())
+                .stream()
+                .map(item -> SelectVO.builder()
+                        .id(item.getId())
+                        .label(item.getReportName())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @Override

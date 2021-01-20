@@ -9,6 +9,7 @@ selectListByCond
            r.has_biz      as hasBiz,
            r.founder      as founder,
            r.create_time  as createTime,
+           r.unit_id      as unitId,
            r.state        as state
         -- @}
     from report r

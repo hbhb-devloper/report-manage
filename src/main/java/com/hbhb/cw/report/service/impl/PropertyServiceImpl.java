@@ -107,4 +107,21 @@ public class PropertyServiceImpl implements PropertyService {
         select.forEach(item -> flowIds.add(item.getFlowId()));
         return flowIds;
     }
+
+    @Override
+    public List<PropertyReqVO> getStartTime(PropertyCondVO cond) {
+        List<ReportProperty> select = propertyMapper.createLambdaQuery()
+                .andEq(ReportProperty::getFlowTypeId, cond.getFlowTypeId())
+                .andEq(ReportProperty::getPeriod, cond.getPeriod())
+                .andEq(ReportProperty::getScope, cond.getScope())
+                .andEq(ReportProperty::getCategoryId, cond.getCategoryId())
+                .select();
+        List<PropertyReqVO> property = new ArrayList<>();
+        select.forEach(item -> property.add(PropertyReqVO.builder()
+                .id(item.getId())
+                .startTime(DateUtil.dateToString(item.getStartTime()))
+                .endTime(DateUtil.dateToString(item.getEndTime()))
+                .build()));
+        return property;
+    }
 }

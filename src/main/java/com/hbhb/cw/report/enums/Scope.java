@@ -6,10 +6,10 @@ package com.hbhb.cw.report.enums;
 
 public enum Scope {
     //分公司
-    FILIALE(0, "分公司"),
+    FILIALE(1, "分公司"),
 
     // 营业厅
-    HALL(1, "营业厅");
+    HALL(2, "营业厅");
 
 
     private final Integer key;

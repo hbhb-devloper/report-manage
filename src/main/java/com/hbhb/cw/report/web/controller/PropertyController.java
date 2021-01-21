@@ -53,4 +53,11 @@ public class PropertyController {
     public List<Long> getFlowId(PropertyCondVO cond) {
         return propertyService.getFlowId(cond);
     }
+
+    @Operation(summary = "跟据条件获取起止时间")
+    @GetMapping("/time")
+    public List<PropertyReqVO> getStartTime(PropertyCondVO cond) {
+        return propertyService.getStartTime(cond);
+    }
+
 }

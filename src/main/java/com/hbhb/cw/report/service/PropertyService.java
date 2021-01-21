@@ -35,4 +35,12 @@ public interface PropertyService {
      * @return 流程id
      */
     List<Long> getFlowId(PropertyCondVO cond);
+
+    /**
+     * 跟据条件获取流程起始时间
+     *
+     * @param cond 条件
+     * @return 流程id
+     */
+    List<PropertyReqVO> getStartTime(PropertyCondVO cond);
 }

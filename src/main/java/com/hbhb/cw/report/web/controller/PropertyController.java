@@ -75,5 +75,4 @@ public class PropertyController {
         return propertyService.getReportPeriod(categoryId);
     }
 
-
 }

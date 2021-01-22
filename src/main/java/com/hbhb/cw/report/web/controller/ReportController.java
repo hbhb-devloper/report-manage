@@ -39,7 +39,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,8 +103,7 @@ public class ReportController {
         // 获取sheet数量
         int numberOfSheets = 0;
         try {
-            FileInputStream finput = new FileInputStream(excelInfo.getPath());
-            XSSFWorkbook hs = new XSSFWorkbook(finput);
+            XSSFWorkbook hs = new XSSFWorkbook(excelInfo.getInputStream());
             numberOfSheets = hs.getNumberOfSheets();
         } catch (Exception e) {
             e.printStackTrace();
@@ -113,19 +115,34 @@ public class ReportController {
         for (int i = 0; i < numberOfSheets; i++) {
             lists.add(list);
         }
+        InputStream inStream = null;
+        try {
+            URL url = new URL(excelInfo.getPath());
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(5 * 1000);
+            inStream = conn.getInputStream();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         String fileName = ExcelUtil.encodingFileName(request, excelInfo.getFileName());
-       exportManySheetWithTemplate(response, fileName, UserImageVO.class, excelInfo.getPath(), numberOfSheets, lists);
+        exportManySheetWithTemplate(response, fileName, UserImageVO.class, inStream, numberOfSheets, lists);
+        try {
+            inStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * 多sheet导出
      */
     public void exportManySheetWithTemplate(HttpServletResponse response,
-                                   String fileName,
-                                   Class clazz,
-                                   String templateFileName,
-                                   Integer sheetNum,
-                                   List<List> dataList) {
+                                            String fileName,
+                                            Class clazz,
+                                            InputStream path,
+                                            Integer sheetNum,
+                                            List<List> dataList) {
         fileName += ExcelTypeEnum.XLSX.getValue();
         ExcelWriter excelWriter = null;
         try {
@@ -134,7 +151,7 @@ public class ReportController {
             response.setHeader("Content-disposition", "attachment;filename=" + fileName);
             excelWriter = EasyExcel.write(response.getOutputStream(), clazz)
                     .registerWriteHandler(new ImageModifyHandler())
-                    .withTemplate(templateFileName)
+                    .withTemplate(path)
                     .build();
             for (int i = 0; i < sheetNum; i++) {
                 WriteSheet writeSheet = EasyExcel.writerSheet(i).build();

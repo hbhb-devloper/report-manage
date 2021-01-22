@@ -9,10 +9,14 @@ import org.beetl.sql.core.page.PageRequest;
 import org.beetl.sql.core.page.PageResult;
 import org.beetl.sql.mapper.annotation.Param;
 
+import java.util.List;
+
 /**
  * @author wangxiaogang
  */
 public interface ReportMapper extends BaseMapper<Report> {
 
-    PageResult<ReportResVO> selectListByCond(PageRequest<ReportResVO> request, @Param("cond") ReportReqVO reportReqVO);
+    PageResult<ReportResVO> selectPageByCond(PageRequest<ReportResVO> request, @Param("cond") ReportReqVO reportReqVO);
+
+    List<ReportResVO> selectListByCond(@Param("cond") ReportReqVO reportReqVO);
 }

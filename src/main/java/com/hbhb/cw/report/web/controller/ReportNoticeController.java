@@ -11,7 +11,9 @@ import org.beetl.sql.core.page.PageResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -19,11 +21,17 @@ import javax.annotation.Resource;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author yzc
  * @since 2021-01-18
  */
+@Tag(name = "报表管理-报表待办信息流程")
+@RestController
+@RequestMapping("/report/notice")
+@Slf4j
 public class ReportNoticeController implements reportApi {
 
     @Resource

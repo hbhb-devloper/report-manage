@@ -1,6 +1,6 @@
 package com.hbhb.cw.report.web.vo;
 
-import com.alibaba.excel.annotation.write.style.ColumnWidth;
+import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ContentRowHeight;
 import com.alibaba.excel.annotation.write.style.HeadRowHeight;
 
@@ -20,9 +20,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ContentRowHeight(50)
-@ColumnWidth(30)
 @HeadRowHeight(0)
+@ContentRowHeight(50)
 public class UserImageVO implements Serializable {
 
     private static final long serialVersionUID = 1695798118204835105L;
@@ -32,23 +31,33 @@ public class UserImageVO implements Serializable {
      *
      * @since 2.1.1
      */
+    @ExcelProperty(value = "角色名称", index = 0)
     private String firstName;
 
+    @ExcelProperty(value = "签名", index = 1)
     private URL url1;
 
+    @ExcelProperty(value = "角色名称", index = 3)
     private String secondName;
 
+    @ExcelProperty(value = "签名", index = 4)
     private URL url2;
 
+    @ExcelProperty(value = "角色名称", index = 6)
     private String thirdName;
 
+    @ExcelProperty(value = "签名", index = 7)
     private URL url3;
 
+    @ExcelProperty(value = "角色名称", index = 9)
     private String fourthName;
 
+    @ExcelProperty(value = "签名", index = 10)
     private URL url4;
 
+    @ExcelProperty(value = "角色名称", index = 12)
     private String fifthName;
 
+    @ExcelProperty(value = "签名", index = 13)
     private URL url5;
 }

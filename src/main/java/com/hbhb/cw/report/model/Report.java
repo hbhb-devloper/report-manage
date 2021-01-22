@@ -46,6 +46,10 @@ public class Report implements Serializable {
      */
     private String period;
     /**
+     * 周期详细
+     */
+    private String periodInfo;
+    /**
      * 创建人
      */
     private Integer founder;
@@ -56,7 +60,7 @@ public class Report implements Serializable {
     /**
      * 审批发起时间
      */
-    private Date launchTime;
+    private String launchTime;
     /**
      * 流程状态（字典：10-流转中，20-通过，30-拒绝）
      */

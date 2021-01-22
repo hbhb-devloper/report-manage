@@ -21,7 +21,7 @@ public class NoticeVO implements Serializable {
     @Schema(description = "内容")
     private String content;
     @Schema(description = "项目id")
-    private Long businessId;
+    private Long reportId;
     @Schema(description = "日期")
     private String date;
     @Schema(description = "签报人")

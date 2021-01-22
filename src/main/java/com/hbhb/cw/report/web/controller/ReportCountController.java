@@ -1,16 +1,24 @@
 package com.hbhb.cw.report.web.controller;
 
+import com.hbhb.core.utils.ExcelUtil;
 import com.hbhb.cw.report.service.ReportService;
+import com.hbhb.cw.report.web.vo.ReportCountHallExportVO;
+import com.hbhb.cw.report.web.vo.ReportCountResVO;
+import com.hbhb.cw.report.web.vo.ReportCountUnitExportVO;
 import com.hbhb.cw.report.web.vo.ReportReqVO;
-import com.hbhb.cw.report.web.vo.ReportResVO;
 
-import org.beetl.sql.core.page.PageResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -32,10 +40,26 @@ public class ReportCountController {
 
     @GetMapping("/unit/list")
     @Operation(summary = "报表列表")
-    public PageResult<ReportResVO> getReportList(
+    public ReportCountResVO getReportList(
             @Parameter(description = "页码，默认为1") @RequestParam(required = false) Integer pageNum,
             @Parameter(description = "每页数量，默认为10") @RequestParam(required = false) Integer pageSize,
-            ReportReqVO reportReqVO, Boolean flag) {
-        return reportService.getReportCountList(flag, reportReqVO, pageNum, pageSize);
+            ReportReqVO reportReqVO) {
+        return reportService.getReportCountList(reportReqVO, pageNum, pageSize);
+    }
+
+    @Operation(summary = "导出")
+    @PostMapping("/export")
+    public void exportBusiness(HttpServletRequest request, HttpServletResponse response,
+                               @Parameter(description = "条件") @RequestBody ReportReqVO reportReqVO) {
+        ;
+        if (reportReqVO.getHallId() == null) {
+            List<ReportCountUnitExportVO> list = reportService.getReportCountUnitExcel(reportReqVO);
+            String fileName = ExcelUtil.encodingFileName(request, "报表上传统计");
+            ExcelUtil.export2Web(response, fileName, fileName, ReportCountUnitExportVO.class, list);
+        } else {
+            List<ReportCountHallExportVO> list = reportService.getReportCountHallExcel(reportReqVO);
+            String fileName = ExcelUtil.encodingFileName(request, "报表上传统计");
+            ExcelUtil.export2Web(response, fileName, fileName, ReportCountHallExportVO.class, list);
+        }
     }
 }

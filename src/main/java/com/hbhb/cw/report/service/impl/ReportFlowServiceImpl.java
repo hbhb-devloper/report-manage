@@ -478,6 +478,8 @@ public class ReportFlowServiceImpl implements ReportFlowService {
                 .receiver(receiver)
                 .promoter(userId)
                 .content(content)
+                .createTime(new Date())
+                .state(0)
                 .flowTypeId(flowTypeId)
                 .createTime(now)
                 .build());

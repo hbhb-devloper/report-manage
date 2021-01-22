@@ -40,6 +40,12 @@ public class ReportVO implements Serializable {
     @Schema(description = "周期")
     private String period;
 
+    @Schema(description = "周期详情")
+    private String periodInfo;
+
+    @Schema(description = "上传时间")
+    private String launchTime;
+
     @Schema(description = "报表类型（0-分公司报表信息，1-营业厅报表类型）")
     private Integer type;
 

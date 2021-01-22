@@ -43,6 +43,12 @@ public class ReportReqVO implements Serializable {
     @Schema(description = "周期")
     private String period;
 
+    @Schema(description = "周期详细")
+    private String periodInfo;
+
+    @Schema(description = "上传时间")
+    private String launchTime;
+
     @Schema(description = "关联单名称(管理内容+报表名称+“审批流程”)")
     private String relationName;
 

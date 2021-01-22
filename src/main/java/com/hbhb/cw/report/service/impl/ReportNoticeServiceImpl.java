@@ -102,10 +102,10 @@ public class ReportNoticeServiceImpl implements ReportNoticeService {
                 .map(notice -> NoticeVO.builder()
                         .id(notice.getId())
                         .content(notice.getContent())
-                        .businessId(notice.getReportId())
+                        .reportId(notice.getReportId())
                         .date(DateUtil.dateToString(notice.getCreateTime()))
                         .userName(userMap.get(notice.getPromoter()))
-                        .noticeType(NoticeType.PRINT.value())
+                        .noticeType(NoticeType.REPORT.value())
                         .build())
                 .collect(Collectors.toList());
     }

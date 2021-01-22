@@ -22,6 +22,9 @@ public class ReportResVO implements Serializable {
     @Schema(description = "序号")
     private Long lineNumber;
 
+    @Schema(description = "id")
+    private Long id;
+
     @Schema(description = "关联单名称(管理内容+报表名称+“审批流程”)")
     private String relationName;
 
@@ -46,15 +49,27 @@ public class ReportResVO implements Serializable {
     @Schema(description = "有无业务")
     private Boolean hasBiz;
 
+    @Schema(description = "有无业务")
+    private String hasBizName;
+
     @Schema(description = "报表周期")
     private String period;
 
+    @Schema(description = "报表周期")
+    private String periodName;
+
     @Schema(description = "创建人")
     private Integer founder;
+
+    @Schema(description = "创建人")
+    private String founderName;
 
     @Schema(description = "创建时间")
     private String createTime;
 
     @Schema(description = "流程状态")
     private String state;
+
+    @Schema(description = "流程状态")
+    private String stateName;
 }

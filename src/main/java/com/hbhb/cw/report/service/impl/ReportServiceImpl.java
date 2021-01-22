@@ -77,6 +77,8 @@ import javax.annotation.Resource;
 
 import lombok.extern.slf4j.Slf4j;
 
+import static com.hbhb.core.utils.DateUtil.stringToDate;
+
 /**
  * @author wangxiaogang
  */
@@ -279,7 +281,7 @@ public class ReportServiceImpl implements ReportService {
                 }
 
                 reportFiles.add(ReportFile.builder()
-                        .createTime(DateUtil.stringToDate(file.getCreateTime()))
+                        .createTime(stringToDate(file.getCreateTime()))
                         .fileName(file.getFileName())
                         .createBy(user.getNickName())
                         .createTime(new Date())
@@ -650,7 +652,7 @@ public class ReportServiceImpl implements ReportService {
         PropertyReqVO propertyReqVO = propertyReqVOList.get(0);
         if (category.getState()) {
             for (ReportResVO reportResVO : list) {
-                if (reportResVO.getState() != null && DateUtil.isExpired(propertyReqVO.getStartTime(),
+                if (reportResVO.getState() != null && isExpired(propertyReqVO.getStartTime(),
                         propertyReqVO.getEndTime(), DateUtil.dateToString(new Date()))) {
                     reportResVO.setStateName("未提交");
                 } else {
@@ -674,4 +676,19 @@ public class ReportServiceImpl implements ReportService {
         }
         return list;
     }
+
+    /**
+     * 盘都某个时间是否在开始和结束时间的区间内如果在则未过期，不再则过期
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param time 需要比较的时间
+     * @return true 未过期 false 过期
+     */
+    public boolean isExpired(String startTime, String endTime, String time) {
+        Date stime = stringToDate(startTime);
+        Date etime = stringToDate(endTime);
+        Date date = stringToDate(time);
+        return date.getTime() > stime.getTime() && date.getTime() < etime.getTime();
+    }
+
 }

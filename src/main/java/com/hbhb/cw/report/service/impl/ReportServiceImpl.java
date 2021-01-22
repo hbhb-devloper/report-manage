@@ -34,7 +34,6 @@ import com.hbhb.cw.report.rpc.SysUserApiExp;
 import com.hbhb.cw.report.rpc.UnitApiExp;
 import com.hbhb.cw.report.service.PropertyService;
 import com.hbhb.cw.report.service.ReportService;
-import com.hbhb.cw.report.web.vo.ExcelInfoVO;
 import com.hbhb.cw.report.web.vo.PropertyCondVO;
 import com.hbhb.cw.report.web.vo.PropertyReqVO;
 import com.hbhb.cw.report.web.vo.ReportCountHallExportVO;
@@ -45,7 +44,6 @@ import com.hbhb.cw.report.web.vo.ReportInitVO;
 import com.hbhb.cw.report.web.vo.ReportReqVO;
 import com.hbhb.cw.report.web.vo.ReportResVO;
 import com.hbhb.cw.report.web.vo.ReportVO;
-import com.hbhb.cw.report.web.vo.UserImageVO;
 import com.hbhb.cw.systemcenter.enums.DictCode;
 import com.hbhb.cw.systemcenter.enums.TypeCode;
 import com.hbhb.cw.systemcenter.enums.UnitEnum;
@@ -59,9 +57,6 @@ import org.beetl.sql.core.page.PageResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -314,86 +309,86 @@ public class ReportServiceImpl implements ReportService {
         reportMapper.updateTemplateById(report);
     }
 
-    @Override
-    public ExcelInfoVO getExcelInfo(Integer fileId, Long reportId) {
-        // 通过fileId得到file路径
-        SysFile fileInfo = fileApiExp.getFileInfo(fileId);
-        ExcelInfoVO excelInfoVO = new ExcelInfoVO();
-        String filePath = fileInfo.getFilePath();
-        String templatePath = "C:/Users/cn/Desktop/ppp";
-        filePath = templatePath + File.separator + "增值税专票模板.xlsx";
-        if (filePath == null) {
-            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
-        }
-        // 判断是否为excel
-        String excel = filePath.substring(filePath.lastIndexOf("."));
-        if (!".xlsx".equals(excel) && !".xls".equals(excel)) {
-            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
-        }
-        excelInfoVO.setPath(filePath);
-        // 通过fileId得到reportFile的fileName
-//        List<ReportFile> reportFileList = reportFileMapper.createLambdaQuery()
-//                .andEq(ReportFile::getReportId, reportId)
-//                .select();
-//        if (reportFileList.size() == 0) {
+//    @Override
+//    public ExcelInfoVO getExcelInfo(Integer fileId, Long reportId) {
+//        // 通过fileId得到file路径
+//        SysFile fileInfo = fileApiExp.getFileInfo(fileId);
+//        ExcelInfoVO excelInfoVO = new ExcelInfoVO();
+//        String filePath = fileInfo.getFilePath();
+//        String templatePath = "C:/Users/cn/Desktop/ppp";
+//        filePath = templatePath + File.separator + "增值税专票模板.xlsx";
+//        if (filePath == null) {
 //            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
 //        }
-//        excelInfoVO.setFileName(reportFileList.get(0).getFileName());
-        excelInfoVO.setFileName("lall");
-        // 通过报表信息id得到节点信息和相关节点的审批用户
-        List<ReportFlow> flowList = reportFlowMapper.createLambdaQuery()
-                .andEq(ReportFlow::getReportId, reportId)
-                .select();
-        // userId => image
-        Map<Integer, String> map = sysUserApi.getUserSignature(null);
-//        Map<Integer, String> map = new HashMap<>();
-//        map.put(27,"https://zhcw.file.iishoni.com/test/QQ图片20200909100351(1).jpg");
-//        map.put(579,"https://zhcw.file.iishoni.com/test/QQ图片20200909100351(1).jpg");
-        UserImageVO userImageVO = new UserImageVO();
-        // 获取图片赋值
-        if (flowList.size() != 0) {
-            userImageVO.setFirstName(flowList.get(0).getRoleDesc());
-            try {
-                userImageVO.setUrl1(new URL(map.get(flowList.get(0).getUserId())));
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-        }
-        if (flowList.size() >= 2) {
-            userImageVO.setSecondName(flowList.get(1).getRoleDesc());
-            try {
-                userImageVO.setUrl2(new URL(map.get(flowList.get(1).getUserId())));
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-        }
-        if (flowList.size() >= 3) {
-            userImageVO.setThirdName(flowList.get(2).getRoleDesc());
-            try {
-                userImageVO.setUrl3(new URL(map.get(flowList.get(2).getUserId())));
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-        }
-        if (flowList.size() >= 4) {
-            userImageVO.setFourthName(flowList.get(3).getRoleDesc());
-            try {
-                userImageVO.setUrl4(new URL(map.get(flowList.get(3).getUserId())));
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-        }
-        if (flowList.size() >= 5) {
-            userImageVO.setFifthName(flowList.get(4).getRoleDesc());
-            try {
-                userImageVO.setUrl5(new URL(map.get(flowList.get(4).getUserId())));
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-        }
-        excelInfoVO.setImageVO(userImageVO);
-        return excelInfoVO;
-    }
+//        // 判断是否为excel
+//        String excel = filePath.substring(filePath.lastIndexOf("."));
+//        if (!".xlsx".equals(excel) && !".xls".equals(excel)) {
+//            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
+//        }
+//        excelInfoVO.setPath(filePath);
+//        // 通过fileId得到reportFile的fileName
+////        List<ReportFile> reportFileList = reportFileMapper.createLambdaQuery()
+////                .andEq(ReportFile::getReportId, reportId)
+////                .select();
+////        if (reportFileList.size() == 0) {
+////            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
+////        }
+////        excelInfoVO.setFileName(reportFileList.get(0).getFileName());
+//        excelInfoVO.setFileName("lall");
+//        // 通过报表信息id得到节点信息和相关节点的审批用户
+//        List<ReportFlow> flowList = reportFlowMapper.createLambdaQuery()
+//                .andEq(ReportFlow::getReportId, reportId)
+//                .select();
+//        // userId => image
+//        Map<Integer, String> map = sysUserApi.getUserSignature(null);
+////        Map<Integer, String> map = new HashMap<>();
+////        map.put(27,"https://zhcw.file.iishoni.com/test/QQ图片20200909100351(1).jpg");
+////        map.put(579,"https://zhcw.file.iishoni.com/test/QQ图片20200909100351(1).jpg");
+//        UserImageVO userImageVO = new UserImageVO();
+//        // 获取图片赋值
+//        if (flowList.size() != 0) {
+//            userImageVO.setFirstName(flowList.get(0).getRoleDesc());
+//            try {
+//                userImageVO.setUrl1(new URL(map.get(flowList.get(0).getUserId())));
+//            } catch (MalformedURLException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        if (flowList.size() >= 2) {
+//            userImageVO.setSecondName(flowList.get(1).getRoleDesc());
+//            try {
+//                userImageVO.setUrl2(new URL(map.get(flowList.get(1).getUserId())));
+//            } catch (MalformedURLException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        if (flowList.size() >= 3) {
+//            userImageVO.setThirdName(flowList.get(2).getRoleDesc());
+//            try {
+//                userImageVO.setUrl3(new URL(map.get(flowList.get(2).getUserId())));
+//            } catch (MalformedURLException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        if (flowList.size() >= 4) {
+//            userImageVO.setFourthName(flowList.get(3).getRoleDesc());
+//            try {
+//                userImageVO.setUrl4(new URL(map.get(flowList.get(3).getUserId())));
+//            } catch (MalformedURLException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        if (flowList.size() >= 5) {
+//            userImageVO.setFifthName(flowList.get(4).getRoleDesc());
+//            try {
+//                userImageVO.setUrl5(new URL(map.get(flowList.get(4).getUserId())));
+//            } catch (MalformedURLException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        excelInfoVO.setImageVO(userImageVO);
+//        return excelInfoVO;
+//    }
 
     @Override
     public void moveReportList(List<Long> list) {

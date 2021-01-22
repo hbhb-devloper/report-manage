@@ -60,7 +60,13 @@ public class ReportController {
         return reportService.getReportInfo(reportId);
     }
 
-//    @Operation(summary = "导出")
+    @Operation(summary = "添加报表信息")
+    @DeleteMapping("/move")
+    public void moveReport(List<Long> list) {
+        reportService.moveReportList(list);
+    }
+
+    //    @Operation(summary = "导出")
 //    @PostMapping("/export")
 //    public void exportBusiness(HttpServletRequest request, HttpServletResponse response, Integer fileId, Long reportId) {
 //        ExcelInfoVO excelInfo = reportService.getExcelInfo(fileId, reportId);
@@ -70,12 +76,6 @@ public class ReportController {
 //        export2WebWithTemplate(response, UserImageVO.class, fileName, "增值税专票",
 //                excelInfo.getPath(), list);
 //    }
-
-    @Operation(summary = "添加报表信息")
-    @DeleteMapping("/move")
-    public void moveReport(List<Long> list) {
-        reportService.moveReportList(list);
-    }
 
 
 //    /**

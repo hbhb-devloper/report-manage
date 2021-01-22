@@ -1,6 +1,5 @@
 package com.hbhb.cw.report.service;
 
-import com.hbhb.cw.report.web.vo.ExcelInfoVO;
 import com.hbhb.cw.report.web.vo.ReportCountHallExportVO;
 import com.hbhb.cw.report.web.vo.ReportCountResVO;
 import com.hbhb.cw.report.web.vo.ReportCountUnitExportVO;
@@ -50,10 +49,10 @@ public interface ReportService {
 
 //    void toApprover(ReportInitVO reportApproveVO, Integer userId);
 
-    /**
-     * 导出 excel报表信息
-     */
-    ExcelInfoVO getExcelInfo(Integer fileId, Long reportId);
+//    /**
+//     * 导出 excel报表信息
+//     */
+//    ExcelInfoVO getExcelInfo(Integer fileId, Long reportId);
 
     /**
      * 删除报表信息列表

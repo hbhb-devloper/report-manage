@@ -11,7 +11,7 @@ selectPageByCond
            rc.report_name as reportName,
            r.has_biz      as hasBiz,
            r.founder      as founder,
-           r.launch_time  as createTime,
+           r.launch_time  as launchTime,
            r.unit_id      as unitId,
            r.hall_id      as hallId,
            r.state        as state
@@ -64,7 +64,7 @@ selectListByCond
            rc.report_name as reportName,
            r.has_biz      as hasBiz,
            r.founder      as founder,
-           r.launch_time  as createTime,
+           r.launch_time  as launchTime,
            r.unit_id      as unitId,
            r.hall_id      as hallId,
            r.state        as state

@@ -65,7 +65,7 @@ public class ReportResVO implements Serializable {
     private String founderName;
 
     @Schema(description = "创建时间")
-    private String createTime;
+    private String launchTime;
 
     @Schema(description = "流程状态")
     private String state;

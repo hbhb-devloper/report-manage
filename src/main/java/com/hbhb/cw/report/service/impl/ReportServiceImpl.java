@@ -1,5 +1,6 @@
 package com.hbhb.cw.report.service.impl;
 
+import com.hbhb.core.bean.BeanConverter;
 import com.hbhb.core.utils.DateUtil;
 import com.hbhb.cw.flowcenter.enums.FlowNodeNoticeState;
 import com.hbhb.cw.flowcenter.enums.FlowNodeNoticeTemp;
@@ -23,7 +24,6 @@ import com.hbhb.cw.report.model.ReportManage;
 import com.hbhb.cw.report.model.ReportNotice;
 import com.hbhb.cw.report.rpc.FileApiExp;
 import com.hbhb.cw.report.rpc.FlowApiExp;
-import com.hbhb.cw.report.rpc.FlowNodeApiExp;
 import com.hbhb.cw.report.rpc.FlowNodePropApiExp;
 import com.hbhb.cw.report.rpc.FlowNoticeApiExp;
 import com.hbhb.cw.report.rpc.FlowRoleUserApiExp;
@@ -33,14 +33,18 @@ import com.hbhb.cw.report.rpc.SysUserApiExp;
 import com.hbhb.cw.report.rpc.UnitApiExp;
 import com.hbhb.cw.report.service.PropertyService;
 import com.hbhb.cw.report.service.ReportService;
+import com.hbhb.cw.report.web.vo.ExcelInfoVO;
 import com.hbhb.cw.report.web.vo.PropertyCondVO;
 import com.hbhb.cw.report.web.vo.PropertyReqVO;
+import com.hbhb.cw.report.web.vo.ReportCountHallExportVO;
 import com.hbhb.cw.report.web.vo.ReportCountResVO;
+import com.hbhb.cw.report.web.vo.ReportCountUnitExportVO;
 import com.hbhb.cw.report.web.vo.ReportFileVO;
 import com.hbhb.cw.report.web.vo.ReportInitVO;
 import com.hbhb.cw.report.web.vo.ReportReqVO;
 import com.hbhb.cw.report.web.vo.ReportResVO;
 import com.hbhb.cw.report.web.vo.ReportVO;
+import com.hbhb.cw.report.web.vo.UserImageVO;
 import com.hbhb.cw.systemcenter.enums.DictCode;
 import com.hbhb.cw.systemcenter.enums.TypeCode;
 import com.hbhb.cw.systemcenter.enums.UnitEnum;
@@ -48,12 +52,18 @@ import com.hbhb.cw.systemcenter.model.SysFile;
 import com.hbhb.cw.systemcenter.vo.DictVO;
 import com.hbhb.cw.systemcenter.vo.UserInfo;
 
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.beetl.sql.core.page.DefaultPageRequest;
 import org.beetl.sql.core.page.PageRequest;
 import org.beetl.sql.core.page.PageResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.FileInputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -83,8 +93,6 @@ public class ReportServiceImpl implements ReportService {
     private SysUserApiExp sysUserApi;
     @Resource
     private FlowApiExp flowApi;
-    @Resource
-    private FlowNodeApiExp nodeApi;
     @Resource
     private FlowNodePropApiExp propApi;
     @Resource
@@ -146,6 +154,14 @@ public class ReportServiceImpl implements ReportService {
         List<SysFile> fileList = fileApiExp.getFileInfoBatch(fileIds);
         List<ReportFileVO> reportFileVOList = new ArrayList<>();
         for (SysFile sysFile : fileList) {
+            int numberOfSheets = 0;
+            try {
+                FileInputStream finput = new FileInputStream(sysFile.getFilePath());
+                XSSFWorkbook hs = new XSSFWorkbook(finput);
+                numberOfSheets =  hs.getNumberOfSheets();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             ReportFile reportFile = map.get(Math.toIntExact(sysFile.getId()));
             reportFileVOList.add(ReportFileVO.builder()
                     .createTime(DateUtil.dateToString(reportFile.getCreateTime()))
@@ -155,6 +171,7 @@ public class ReportServiceImpl implements ReportService {
                     .fileId(Long.valueOf(reportFile.getFileId()))
                     .filePath(sysFile.getFilePath())
                     .reportId(reportId)
+                    .sheetNum(numberOfSheets)
                     .required(true)
                     .build());
         }
@@ -163,7 +180,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public ReportCountResVO getReportCountList(ReportReqVO reportReqVO, Integer pageNum, Integer pageSize) {
-        List<ReportResVO> list = getReportCount(reportReqVO);
+        List<ReportResVO> list = getReportInfoList(reportReqVO);
         // 分页
         return ReportCountResVO.builder()
                 .list(list.stream().sorted(Comparator.comparing(ReportResVO::getLineNumber))
@@ -172,17 +189,19 @@ public class ReportServiceImpl implements ReportService {
                 .build();
     }
 
-//    @Override
-//    public List<ReportCountHallExportVO> getReportCountHallExcel(ReportReqVO reportReqVO) {
-//        List<ReportResVO> list = getReportCount(reportReqVO);
-//        return BeanConverter.copyBeanList(list, ReportCountHallExportVO.class);
-//    }
-//
-//    @Override
-//    public List<ReportCountUnitExportVO> getReportCountUnitExcel(ReportReqVO reportReqVO) {
-//        List<ReportResVO> list = getReportCount(reportReqVO);
-//        return BeanConverter.copyBeanList(list, ReportCountUnitExportVO.class);
-//    }
+    @Override
+    public List<ReportCountHallExportVO> getReportCountHallExcel(ReportReqVO reportReqVO) {
+        List<ReportResVO> list = getReportInfoList(reportReqVO);
+        list.stream().sorted(Comparator.comparing(ReportResVO::getLineNumber));
+        return BeanConverter.copyBeanList(list, ReportCountHallExportVO.class);
+    }
+
+    @Override
+    public List<ReportCountUnitExportVO> getReportCountUnitExcel(ReportReqVO reportReqVO) {
+        List<ReportResVO> list = getReportInfoList(reportReqVO);
+        list.stream().sorted(Comparator.comparing(ReportResVO::getLineNumber));
+        return BeanConverter.copyBeanList(list, ReportCountUnitExportVO.class);
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -223,6 +242,42 @@ public class ReportServiceImpl implements ReportService {
         if (files != null && files.size() != 0) {
             List<ReportFile> reportFiles = new ArrayList<>();
             for (ReportFileVO file : files) {
+
+                SysFile fileInfo = fileApiExp.getFileInfo(Math.toIntExact(file.getFileId()));
+                String filePath = fileInfo.getFilePath();
+                if (filePath == null) {
+                    throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
+                }
+                // 判断是否为excel
+                String excel = filePath.substring(filePath.lastIndexOf("."));
+                // 判断shet熟料是否达标
+                if (".xlsx".equals(excel) ) {
+                    int numberOfSheets = 0;
+                    try {
+                        FileInputStream finput = new FileInputStream(filePath);
+                        XSSFWorkbook hs = new XSSFWorkbook(finput);
+                        numberOfSheets =  hs.getNumberOfSheets();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    if (numberOfSheets>=10){
+                        throw new ReportException(ReportErrorCode.EXCEED_LIMIT_SHEET);
+                    }
+                }else if (".xls".equals(excel)){
+                    int numberOfSheets = 0;
+                    try {
+                        FileInputStream finput = new FileInputStream(filePath);
+                        POIFSFileSystem fs = new POIFSFileSystem( finput);
+                        HSSFWorkbook hs = new HSSFWorkbook(fs);
+                        numberOfSheets =  hs.getNumberOfSheets();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    if (numberOfSheets>=10){
+                        throw new ReportException(ReportErrorCode.EXCEED_LIMIT_SHEET);
+                    }
+                }
+
                 reportFiles.add(ReportFile.builder()
                         .createTime(DateUtil.stringToDate(file.getCreateTime()))
                         .fileName(file.getFileName())
@@ -256,7 +311,6 @@ public class ReportServiceImpl implements ReportService {
         }
     }
 
-    //    @Override
     @Transactional(rollbackFor = Exception.class)
     public void toApprover(ReportInitVO initVO) {
         Report report = reportMapper.single(initVO.getReportId());
@@ -306,86 +360,86 @@ public class ReportServiceImpl implements ReportService {
         reportMapper.updateTemplateById(report);
     }
 
-//    @Override
-//    public ExcelInfoVO getExcelInfo(Integer fileId, Long reportId) {
-//        // 通过fileId得到file路径
-//        SysFile fileInfo = fileApiExp.getFileInfo(fileId);
-//        ExcelInfoVO excelInfoVO = new ExcelInfoVO();
-//        String filePath = fileInfo.getFilePath();
-//        String templatePath = "C:/Users/cn/Desktop/ppp";
-//        filePath = templatePath + File.separator + "增值税专票模板.xlsx";
-//        if (filePath == null) {
-//            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
-//        }
-//        // 判断是否为excel
-//        String excel = filePath.substring(filePath.lastIndexOf("."));
-//        if (!".xlsx".equals(excel) && !".xls".equals(excel)) {
-//            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
-//        }
-//        excelInfoVO.setPath(filePath);
-//        // 通过fileId得到reportFile的fileName
-////        List<ReportFile> reportFileList = reportFileMapper.createLambdaQuery()
-////                .andEq(ReportFile::getReportId, reportId)
-////                .select();
-////        if (reportFileList.size() == 0) {
-////            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
-////        }
-////        excelInfoVO.setFileName(reportFileList.get(0).getFileName());
-//        excelInfoVO.setFileName("lall");
-//        // 通过报表信息id得到节点信息和相关节点的审批用户
-//        List<ReportFlow> flowList = reportFlowMapper.createLambdaQuery()
-//                .andEq(ReportFlow::getReportId, reportId)
-//                .select();
-//        // userId => image
-//        Map<Integer, String> map = sysUserApi.getUserSignature(null);
-////        Map<Integer, String> map = new HashMap<>();
-////        map.put(27,"https://zhcw.file.iishoni.com/test/QQ图片20200909100351(1).jpg");
-////        map.put(579,"https://zhcw.file.iishoni.com/test/QQ图片20200909100351(1).jpg");
-//        UserImageVO userImageVO = new UserImageVO();
-//        // 获取图片赋值
-//        if (flowList.size() != 0) {
-//            userImageVO.setFirstName(flowList.get(0).getRoleDesc());
-//            try {
-//                userImageVO.setUrl1(new URL(map.get(flowList.get(0).getUserId())));
-//            } catch (MalformedURLException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        if (flowList.size() >= 2) {
-//            userImageVO.setSecondName(flowList.get(1).getRoleDesc());
-//            try {
-//                userImageVO.setUrl2(new URL(map.get(flowList.get(1).getUserId())));
-//            } catch (MalformedURLException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        if (flowList.size() >= 3) {
-//            userImageVO.setThirdName(flowList.get(2).getRoleDesc());
-//            try {
-//                userImageVO.setUrl3(new URL(map.get(flowList.get(2).getUserId())));
-//            } catch (MalformedURLException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        if (flowList.size() >= 4) {
-//            userImageVO.setFourthName(flowList.get(3).getRoleDesc());
-//            try {
-//                userImageVO.setUrl4(new URL(map.get(flowList.get(3).getUserId())));
-//            } catch (MalformedURLException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        if (flowList.size() >= 5) {
-//            userImageVO.setFifthName(flowList.get(4).getRoleDesc());
-//            try {
-//                userImageVO.setUrl5(new URL(map.get(flowList.get(4).getUserId())));
-//            } catch (MalformedURLException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        excelInfoVO.setImageVO(userImageVO);
-//        return excelInfoVO;
-//    }
+    @Override
+    public ExcelInfoVO getExcelInfo(Integer fileId, Long reportId) {
+        // 通过fileId得到file路径
+        SysFile fileInfo = fileApiExp.getFileInfo(fileId);
+        ExcelInfoVO excelInfoVO = new ExcelInfoVO();
+        String filePath = fileInfo.getFilePath();
+        if (filePath == null) {
+            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
+        }
+        // 判断是否为excel
+        String excel = filePath.substring(filePath.lastIndexOf("."));
+        if (!".xlsx".equals(excel) && !".xls".equals(excel)) {
+            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
+        }
+        excelInfoVO.setPath(filePath);
+        // 通过fileId得到reportFile的fileName
+        List<ReportFile> reportFileList = reportFileMapper.createLambdaQuery()
+                .andEq(ReportFile::getReportId, reportId)
+                .select();
+        if (reportFileList.size() == 0) {
+            throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
+        }
+        excelInfoVO.setFileName(reportFileList.get(0).getFileName());
+        // 通过报表信息id得到节点信息和相关节点的审批用户
+        List<ReportFlow> flowList = reportFlowMapper.createLambdaQuery()
+                .andEq(ReportFlow::getReportId, reportId)
+                .select();
+        List<Integer> userList = new ArrayList<>();
+        if (flowList.size() != 0) {
+            for (ReportFlow reportFlow : flowList) {
+                userList.add(reportFlow.getUserId());
+            }
+        }
+        // userId => image
+        Map<Integer, String> map = sysUserApi.getUserSignature(userList);
+        UserImageVO userImageVO = new UserImageVO();
+        // 获取图片赋值
+        if (flowList.size() != 0) {
+            userImageVO.setFirstName(flowList.get(0).getRoleDesc());
+            try {
+                userImageVO.setUrl1(new URL(map.get(flowList.get(0).getUserId())));
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
+        if (flowList.size() >= 2) {
+            userImageVO.setSecondName(flowList.get(1).getRoleDesc());
+            try {
+                userImageVO.setUrl2(new URL(map.get(flowList.get(1).getUserId())));
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
+        if (flowList.size() >= 3) {
+            userImageVO.setThirdName(flowList.get(2).getRoleDesc());
+            try {
+                userImageVO.setUrl3(new URL(map.get(flowList.get(2).getUserId())));
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
+        if (flowList.size() >= 4) {
+            userImageVO.setFourthName(flowList.get(3).getRoleDesc());
+            try {
+                userImageVO.setUrl4(new URL(map.get(flowList.get(3).getUserId())));
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
+        if (flowList.size() >= 5) {
+            userImageVO.setFifthName(flowList.get(4).getRoleDesc());
+            try {
+                userImageVO.setUrl5(new URL(map.get(flowList.get(4).getUserId())));
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
+        excelInfoVO.setImageVO(userImageVO);
+        return excelInfoVO;
+    }
 
     @Override
     public void moveReportList(List<Long> list) {
@@ -462,6 +516,55 @@ public class ReportServiceImpl implements ReportService {
     }
 
     /**
+     * 得到通过条件得到上传统计list
+     */
+    private List<ReportResVO> getReportInfoList(ReportReqVO reportReqVO) {
+        List<ReportResVO> list = new ArrayList<>();
+        // 旬时没选择旬详细
+        if ("1".equals(reportReqVO.getPeriod()) && reportReqVO.getPeriodInfo() == null) {
+            List<DictVO> stateDict = dictApi.getDict(TypeCode.REPORT.value(), DictCode.REPORT_THE_DAYS.value());
+            Map<String, String> periodMap = stateDict.stream().collect(Collectors.toMap(DictVO::getValue, DictVO::getLabel));
+            for (int i = 0; i < 3; i++) {
+                reportReqVO.setPeriodInfo(String.valueOf(i + 1));
+                List<ReportResVO> reportResVOList = getReportCount(reportReqVO);
+                for (ReportResVO reportResVO : reportResVOList) {
+                    reportResVO.setLaunchTime(reportResVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
+                }
+                list.addAll(reportResVOList);
+            }
+        }
+        // 季时没选择详细
+        else if ("3".equals(reportReqVO.getPeriod()) && reportReqVO.getPeriodInfo() == null) {
+            List<DictVO> stateDict = dictApi.getDict(TypeCode.REPORT.value(), DictCode.REPORT_SEASON.value());
+            Map<String, String> periodMap = stateDict.stream().collect(Collectors.toMap(DictVO::getValue, DictVO::getLabel));
+            for (int i = 0; i < 4; i++) {
+                reportReqVO.setPeriodInfo(String.valueOf(i + 1));
+                List<ReportResVO> reportResVOList = getReportCount(reportReqVO);
+                for (ReportResVO reportResVO : reportResVOList) {
+                    reportResVO.setLaunchTime(reportResVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
+                }
+                list.addAll(reportResVOList);
+            }
+        }
+        // 年时没选择详情
+        else if ("4".equals(reportReqVO.getPeriod()) && reportReqVO.getPeriodInfo() == null) {
+            List<DictVO> stateDict = dictApi.getDict(TypeCode.REPORT.value(), DictCode.REPORT_HALF_YEAR.value());
+            Map<String, String> periodMap = stateDict.stream().collect(Collectors.toMap(DictVO::getValue, DictVO::getLabel));
+            for (int i = 0; i < 2; i++) {
+                reportReqVO.setPeriodInfo(String.valueOf(i + 1));
+                List<ReportResVO> reportResVOList = getReportCount(reportReqVO);
+                for (ReportResVO reportResVO : reportResVOList) {
+                    reportResVO.setLaunchTime(reportResVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
+                }
+                list.addAll(reportResVOList);
+            }
+        } else {
+            list = getReportCount(reportReqVO);
+        }
+        return list;
+    }
+
+    /**
      * 通过条件得到上传统计list
      */
     private List<ReportResVO> getReportCount(ReportReqVO reportReqVO) {
@@ -477,7 +580,6 @@ public class ReportServiceImpl implements ReportService {
         Map<Integer, String> unitMap = unitApi.getUnitMapById();
 
         List<ReportResVO> list = reportMapper.selectListByCond(reportReqVO);
-        ;
         // 如果为单位
         if (reportReqVO.getHallId() == null) {
             // unitId => ReportResVO
@@ -531,6 +633,9 @@ public class ReportServiceImpl implements ReportService {
         Map<String, String> stateMap = stateDict.stream().collect(Collectors.toMap(DictVO::getValue, DictVO::getLabel));
         // 人物名称
         Map<Integer, String> userMap = sysUserApi.getUserByUnitIds(reportReqVO.getUnitId());
+        if (reportReqVO.getPeriod() == null) {
+            return new ArrayList<>();
+        }
         // 通过报表名称id得到开始结束时间
         List<PropertyReqVO> propertyReqVOList = propertyService.getStartTime(PropertyCondVO.builder()
                 .categoryId(reportReqVO.getCategoryId())
@@ -543,22 +648,22 @@ public class ReportServiceImpl implements ReportService {
         }
         // 判断报表状态
         PropertyReqVO propertyReqVO = propertyReqVOList.get(0);
-//        if (category.getState()) {
-//            for (ReportResVO reportResVO : list) {
-//                if (reportResVO.getState() != null && DateUtil.isExpired(propertyReqVO.getStartTime(),
-//                        propertyReqVO.getEndTime(), DateUtil.dateToString(new Date()))) {
-//                    reportResVO.setStateName("未提交");
-//                } else {
-//                    reportResVO.setStateName("已过期");
-//                }
-//            }
-//        } else {
-//            for (ReportResVO reportResVO : list) {
-//                if (reportResVO.getState() != null) {
-//                    reportResVO.setStateName("未启用");
-//                }
-//            }
-//        }
+        if (category.getState()) {
+            for (ReportResVO reportResVO : list) {
+                if (reportResVO.getState() != null && DateUtil.isExpired(propertyReqVO.getStartTime(),
+                        propertyReqVO.getEndTime(), DateUtil.dateToString(new Date()))) {
+                    reportResVO.setStateName("未提交");
+                } else {
+                    reportResVO.setStateName("已过期");
+                }
+            }
+        } else {
+            for (ReportResVO reportResVO : list) {
+                if (reportResVO.getState() != null) {
+                    reportResVO.setStateName("未启用");
+                }
+            }
+        }
         for (int i = 0; i < list.size(); i++) {
             list.get(i).setLineNumber(i + 1L);
             list.get(i).setPeriodName(periodMap.get(list.get(i).getPeriod()));

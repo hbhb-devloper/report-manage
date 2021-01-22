@@ -25,6 +25,8 @@ public enum ReportErrorCode {
     NEXT_NODE_NO_USER("86010", "next.node.no.user"),
     // 该条报表信息已存在请勿重复上传
     IS_ALREADY_EXISTENCE("86010", "is.already.existence"),
+    // Excel的sheet数量超过限定范围
+    EXCEED_LIMIT_SHEET("86011", "exceed.limit.sheet"),
     ;
 
     private String code;

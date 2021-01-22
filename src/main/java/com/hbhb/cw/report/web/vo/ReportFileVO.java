@@ -42,6 +42,9 @@ public class ReportFileVO implements Serializable {
     @Schema(description = "作者")
     private String author;
 
+    @Schema(description = "sheet熟料")
+    private Integer sheetNum;
+
     @Schema(description = "创建时间")
     private String createTime;
 }

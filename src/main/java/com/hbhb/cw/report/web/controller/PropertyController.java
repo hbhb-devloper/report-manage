@@ -1,5 +1,6 @@
 package com.hbhb.cw.report.web.controller;
 
+import com.hbhb.api.core.bean.SelectVO;
 import com.hbhb.cw.report.service.PropertyService;
 import com.hbhb.cw.report.web.vo.PropertyCondVO;
 import com.hbhb.cw.report.web.vo.PropertyReqVO;
@@ -9,7 +10,9 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.beetl.sql.core.page.PageResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,10 +57,23 @@ public class PropertyController {
         return propertyService.getFlowId(cond);
     }
 
+    @Operation(summary = "跟据条件获取流程id")
+    @DeleteMapping("/{id}")
+    public void deleteProp(@PathVariable("id") Long id) {
+        propertyService.deleteProp(id);
+    }
+
     @Operation(summary = "跟据条件获取起止时间")
     @GetMapping("/time")
     public List<PropertyReqVO> getStartTime(PropertyCondVO cond) {
         return propertyService.getStartTime(cond);
     }
+
+    @Operation(summary = "跟据报表名称id获取周期")
+    @GetMapping("/period")
+    public List<SelectVO> getReportPeriod(@Parameter(description = "报表名称id") Long categoryId) {
+        return propertyService.getReportPeriod(categoryId);
+    }
+
 
 }

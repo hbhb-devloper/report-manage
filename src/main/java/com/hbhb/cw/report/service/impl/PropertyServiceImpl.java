@@ -1,5 +1,6 @@
 package com.hbhb.cw.report.service.impl;
 
+import com.hbhb.api.core.bean.SelectVO;
 import com.hbhb.core.utils.DateUtil;
 import com.hbhb.cw.report.enums.Scope;
 import com.hbhb.cw.report.mapper.ReportPropertyMapper;
@@ -26,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -123,5 +125,27 @@ public class PropertyServiceImpl implements PropertyService {
                 .endTime(DateUtil.dateToString(item.getEndTime()))
                 .build()));
         return property;
+    }
+
+    @Override
+    public void deleteProp(Long id) {
+        propertyMapper.deleteById(id);
+    }
+
+    @Override
+    public List<SelectVO> getReportPeriod(Long categoryId) {
+        List<ReportProperty> select = propertyMapper.createLambdaQuery()
+                .andEq(ReportProperty::getCategoryId, categoryId)
+                .select();
+        List<DictVO> dict = dictApi.getDict(TypeCode.REPORT.value(), DictCode.REPORT_PERIOD.value());
+        Map<String, String> periodMap = dict.stream().collect(Collectors.toMap(DictVO::getValue, DictVO::getLabel));
+        return Optional.ofNullable(select)
+                .orElse(new ArrayList<>())
+                .stream()
+                .map(item -> SelectVO.builder()
+                        .id(Long.valueOf(item.getPeriod()))
+                        .label(periodMap.get(item.getPeriod().toString()))
+                        .build())
+                .collect(Collectors.toList());
     }
 }

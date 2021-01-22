@@ -1,5 +1,6 @@
 package com.hbhb.cw.report.service;
 
+import com.hbhb.api.core.bean.SelectVO;
 import com.hbhb.cw.report.web.vo.PropertyCondVO;
 import com.hbhb.cw.report.web.vo.PropertyReqVO;
 import com.hbhb.cw.report.web.vo.PropertyResVO;
@@ -43,4 +44,19 @@ public interface PropertyService {
      * @return 流程id
      */
     List<PropertyReqVO> getStartTime(PropertyCondVO cond);
+
+    /**
+     * 删除报表名称属性
+     *
+     * @param id id
+     */
+    void deleteProp(Long id);
+
+    /**
+     * 跟据报表名称id获取报表周期
+     *
+     * @param categoryId id
+     * @return 周期下拉框
+     */
+    List<SelectVO> getReportPeriod(Long categoryId);
 }

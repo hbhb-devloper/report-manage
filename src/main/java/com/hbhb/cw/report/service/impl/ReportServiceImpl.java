@@ -543,22 +543,22 @@ public class ReportServiceImpl implements ReportService {
         }
         // 判断报表状态
         PropertyReqVO propertyReqVO = propertyReqVOList.get(0);
-        if (category.getState()) {
-            for (ReportResVO reportResVO : list) {
-                if (reportResVO.getState() != null && DateUtil.isExpired(propertyReqVO.getStartTime(),
-                        propertyReqVO.getEndTime(), DateUtil.dateToString(new Date()))) {
-                    reportResVO.setStateName("未提交");
-                } else {
-                    reportResVO.setStateName("已过期");
-                }
-            }
-        } else {
-            for (ReportResVO reportResVO : list) {
-                if (reportResVO.getState() != null) {
-                    reportResVO.setStateName("未启用");
-                }
-            }
-        }
+//        if (category.getState()) {
+//            for (ReportResVO reportResVO : list) {
+//                if (reportResVO.getState() != null && DateUtil.isExpired(propertyReqVO.getStartTime(),
+//                        propertyReqVO.getEndTime(), DateUtil.dateToString(new Date()))) {
+//                    reportResVO.setStateName("未提交");
+//                } else {
+//                    reportResVO.setStateName("已过期");
+//                }
+//            }
+//        } else {
+//            for (ReportResVO reportResVO : list) {
+//                if (reportResVO.getState() != null) {
+//                    reportResVO.setStateName("未启用");
+//                }
+//            }
+//        }
         for (int i = 0; i < list.size(); i++) {
             list.get(i).setLineNumber(i + 1L);
             list.get(i).setPeriodName(periodMap.get(list.get(i).getPeriod()));

@@ -1,6 +1,5 @@
 package com.hbhb.cw.report.service.impl;
 
-import com.hbhb.core.bean.BeanConverter;
 import com.hbhb.core.utils.DateUtil;
 import com.hbhb.cw.flowcenter.enums.FlowNodeNoticeState;
 import com.hbhb.cw.flowcenter.enums.FlowNodeNoticeTemp;
@@ -36,9 +35,7 @@ import com.hbhb.cw.report.service.PropertyService;
 import com.hbhb.cw.report.service.ReportService;
 import com.hbhb.cw.report.web.vo.PropertyCondVO;
 import com.hbhb.cw.report.web.vo.PropertyReqVO;
-import com.hbhb.cw.report.web.vo.ReportCountHallExportVO;
 import com.hbhb.cw.report.web.vo.ReportCountResVO;
-import com.hbhb.cw.report.web.vo.ReportCountUnitExportVO;
 import com.hbhb.cw.report.web.vo.ReportFileVO;
 import com.hbhb.cw.report.web.vo.ReportInitVO;
 import com.hbhb.cw.report.web.vo.ReportReqVO;
@@ -175,17 +172,17 @@ public class ReportServiceImpl implements ReportService {
                 .build();
     }
 
-    @Override
-    public List<ReportCountHallExportVO> getReportCountHallExcel(ReportReqVO reportReqVO) {
-        List<ReportResVO> list = getReportCount(reportReqVO);
-        return BeanConverter.copyBeanList(list, ReportCountHallExportVO.class);
-    }
-
-    @Override
-    public List<ReportCountUnitExportVO> getReportCountUnitExcel(ReportReqVO reportReqVO) {
-        List<ReportResVO> list = getReportCount(reportReqVO);
-        return BeanConverter.copyBeanList(list, ReportCountUnitExportVO.class);
-    }
+//    @Override
+//    public List<ReportCountHallExportVO> getReportCountHallExcel(ReportReqVO reportReqVO) {
+//        List<ReportResVO> list = getReportCount(reportReqVO);
+//        return BeanConverter.copyBeanList(list, ReportCountHallExportVO.class);
+//    }
+//
+//    @Override
+//    public List<ReportCountUnitExportVO> getReportCountUnitExcel(ReportReqVO reportReqVO) {
+//        List<ReportResVO> list = getReportCount(reportReqVO);
+//        return BeanConverter.copyBeanList(list, ReportCountUnitExportVO.class);
+//    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)

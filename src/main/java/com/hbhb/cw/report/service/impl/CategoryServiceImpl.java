@@ -37,6 +37,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.alibaba.excel.util.StringUtils.isEmpty;
+
 /**
  * @author wangxiaogang
  */
@@ -143,7 +145,6 @@ public class CategoryServiceImpl implements CategoryService {
         ReportCategory select = categoryMapper
                 .createLambdaQuery()
                 .andEq(ReportCategory::getId, Query.filterNull(id))
-                .andEq(ReportCategory::getState, true)
                 .single();
         BeanUtils.copyProperties(select, resVO);
 
@@ -154,51 +155,53 @@ public class CategoryServiceImpl implements CategoryService {
                 .select();
 
         // 转换流程类型名称，流程名称
-        List<Long> flowIds = new ArrayList<>();
-        List<Long> flowTypeIds = new ArrayList<>();
-        list.forEach(item -> {
-            flowIds.add(item.getFlowId());
-            flowTypeIds.add(item.getFlowTypeId());
-        });
-        // 去重流程id
-        HashSet<Long> flowSet = new HashSet<>(flowIds);
-        flowIds.clear();
-        flowIds.addAll(flowSet);
-        // 去重流程类型id
-        HashSet<Long> flowTypeSet = new HashSet<>(flowTypeIds);
-        flowTypeIds.clear();
-        flowTypeIds.addAll(flowTypeSet);
-        Map<Long, String> flowMapName = flowApi.getFlowMapName(flowIds);
-        Map<Long, String> flowTypeMapName = typeApi.getFlowTypeMapName(flowTypeIds);
+        if (list.size() != 0) {
+            List<Long> flowIds = new ArrayList<>();
+            List<Long> flowTypeIds = new ArrayList<>();
+            list.forEach(item -> {
+                flowIds.add(item.getFlowId());
+                flowTypeIds.add(item.getFlowTypeId());
+            });
+            // 去重流程id
+            HashSet<Long> flowSet = new HashSet<>(flowIds);
+            flowIds.clear();
+            flowIds.addAll(flowSet);
+            // 去重流程类型id
+            HashSet<Long> flowTypeSet = new HashSet<>(flowTypeIds);
+            flowTypeIds.clear();
+            flowTypeIds.addAll(flowTypeSet);
+            Map<Long, String> flowMapName = flowApi.getFlowMapName(flowIds);
+            Map<Long, String> flowTypeMapName = typeApi.getFlowTypeMapName(flowTypeIds);
 
-        // 周期 范围
-        Map<Integer, String> scopeMap = new HashMap<>(5);
-        scopeMap.put(Scope.FILIALE.key(), Scope.FILIALE.value());
-        scopeMap.put(Scope.HALL.key(), Scope.HALL.value());
-        // 周期
-        List<DictVO> dict = dictApi.getDict(TypeCode.REPORT.value(), DictCode.REPORT_PERIOD.value());
-        Map<String, String> periodMap = dict.stream().collect(Collectors.toMap(DictVO::getValue, DictVO::getLabel));
+            // 周期 范围
+            Map<Integer, String> scopeMap = new HashMap<>(5);
+            scopeMap.put(Scope.FILIALE.key(), Scope.FILIALE.value());
+            scopeMap.put(Scope.HALL.key(), Scope.HALL.value());
+            // 周期
+            List<DictVO> dict = dictApi.getDict(TypeCode.REPORT.value(), DictCode.REPORT_PERIOD.value());
+            Map<String, String> periodMap = dict.stream().collect(Collectors.toMap(DictVO::getValue, DictVO::getLabel));
 
-        // 组装流程名称，类型名称 及时间格式
-        List<PropertyVO> propertyVoList = new ArrayList<>();
-        for (ReportProperty property : list) {
-            PropertyVO propertyVo = new PropertyVO();
-            BeanUtils.copyProperties(property, propertyVo);
-            propertyVo.setPeriodName(periodMap.get(property.getPeriod().toString()));
-            propertyVo.setScopeName(scopeMap.get(property.getScope()));
-            propertyVo.setFlowTypeName(flowTypeMapName.get(property.getFlowTypeId()));
-            propertyVo.setFlowName(flowMapName.get(property.getFlowId()));
-            propertyVo.setStartTime(DateUtil.dateToString(property.getStartTime(), DateUtil.FORMAT_PATTERN_yyyy_MM_dd));
-            propertyVo.setEndTime(DateUtil.dateToString(property.getEndTime(), DateUtil.FORMAT_PATTERN_yyyy_MM_dd));
-            propertyVoList.add(propertyVo);
+            // 组装流程名称，类型名称 及时间格式
+            List<PropertyVO> propertyVoList = new ArrayList<>();
+            for (ReportProperty property : list) {
+                PropertyVO propertyVo = new PropertyVO();
+                BeanUtils.copyProperties(property, propertyVo);
+                propertyVo.setPeriodName(periodMap.get(property.getPeriod().toString()));
+                propertyVo.setScopeName(scopeMap.get(property.getScope()));
+                propertyVo.setFlowTypeName(flowTypeMapName.get(property.getFlowTypeId()));
+                propertyVo.setFlowName(flowMapName.get(property.getFlowId()));
+                propertyVo.setStartTime(DateUtil.dateToString(property.getStartTime(), DateUtil.FORMAT_PATTERN_yyyy_MM_dd));
+                propertyVo.setEndTime(DateUtil.dateToString(property.getEndTime(), DateUtil.FORMAT_PATTERN_yyyy_MM_dd));
+                propertyVoList.add(propertyVo);
+            }
+            resVO.setPropertyList(propertyVoList);
         }
-        resVO.setPropertyList(propertyVoList);
         return resVO;
     }
 
     private void saveProperty(List<PropertyVO> propertyVoList, Long categoryId) {
         List<ReportProperty> properties = new ArrayList<>();
-        if (propertyVoList.size() != 0) {
+        if (!isEmpty(propertyVoList)) {
             for (PropertyVO propertyVo : propertyVoList) {
                 ReportProperty property = new ReportProperty();
                 BeanUtils.copyProperties(propertyVo, property);

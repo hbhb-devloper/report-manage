@@ -57,7 +57,7 @@ public class PropertyController {
         return propertyService.getFlowId(cond);
     }
 
-    @Operation(summary = "跟据条件获取流程id")
+    @Operation(summary = "删除报表名称属性")
     @DeleteMapping("/{id}")
     public void deleteProp(@PathVariable("id") Long id) {
         propertyService.deleteProp(id);

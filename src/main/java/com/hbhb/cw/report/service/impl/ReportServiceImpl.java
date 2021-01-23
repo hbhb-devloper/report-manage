@@ -386,17 +386,6 @@ public class ReportServiceImpl implements ReportService {
             throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
         }
         excelInfoVO.setPath(filePath);
-        try {
-            URL url = new URL(filePath);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(5 * 1000);
-            InputStream inStream = conn.getInputStream();
-            excelInfoVO.setInputStream(inStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         // 通过fileId得到reportFile的fileName
         List<ReportFile> reportFileList = reportFileMapper.createLambdaQuery()
                 .andEq(ReportFile::getReportId, reportId)
@@ -408,6 +397,7 @@ public class ReportServiceImpl implements ReportService {
         // 通过报表信息id得到节点信息和相关节点的审批用户
         List<ReportFlow> flowList = reportFlowMapper.createLambdaQuery()
                 .andEq(ReportFlow::getReportId, reportId)
+                .andEq(ReportFlow::getOperation,OperationState.AGREE)
                 .select();
         List<Integer> userList = new ArrayList<>();
         if (flowList.size() != 0) {

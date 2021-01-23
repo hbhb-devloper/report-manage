@@ -62,6 +62,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -158,12 +160,19 @@ public class ReportServiceImpl implements ReportService {
         for (SysFile sysFile : fileList) {
             int numberOfSheets = 0;
             try {
-                FileInputStream finput = new FileInputStream(sysFile.getFilePath());
-                XSSFWorkbook hs = new XSSFWorkbook(finput);
-                numberOfSheets =  hs.getNumberOfSheets();
+                String filePath = sysFile.getFilePath();
+                URL url = new URL(filePath);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setConnectTimeout(5 * 1000);
+                InputStream inStream = conn.getInputStream();
+                XSSFWorkbook hs = new XSSFWorkbook(inStream);
+                numberOfSheets = hs.getNumberOfSheets();
+                inStream.close();
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
             ReportFile reportFile = map.get(Math.toIntExact(sysFile.getId()));
             reportFileVOList.add(ReportFileVO.builder()
                     .createTime(DateUtil.dateToString(reportFile.getCreateTime()))
@@ -253,29 +262,29 @@ public class ReportServiceImpl implements ReportService {
                 // 判断是否为excel
                 String excel = filePath.substring(filePath.lastIndexOf("."));
                 // 判断shet熟料是否达标
-                if (".xlsx".equals(excel) ) {
+                if (".xlsx".equals(excel)) {
                     int numberOfSheets = 0;
                     try {
                         FileInputStream finput = new FileInputStream(filePath);
                         XSSFWorkbook hs = new XSSFWorkbook(finput);
-                        numberOfSheets =  hs.getNumberOfSheets();
+                        numberOfSheets = hs.getNumberOfSheets();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    if (numberOfSheets>=10){
+                    if (numberOfSheets >= 10) {
                         throw new ReportException(ReportErrorCode.EXCEED_LIMIT_SHEET);
                     }
-                }else if (".xls".equals(excel)){
+                } else if (".xls".equals(excel)) {
                     int numberOfSheets = 0;
                     try {
                         FileInputStream finput = new FileInputStream(filePath);
-                        POIFSFileSystem fs = new POIFSFileSystem( finput);
+                        POIFSFileSystem fs = new POIFSFileSystem(finput);
                         HSSFWorkbook hs = new HSSFWorkbook(fs);
-                        numberOfSheets =  hs.getNumberOfSheets();
+                        numberOfSheets = hs.getNumberOfSheets();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    if (numberOfSheets>=10){
+                    if (numberOfSheets >= 10) {
                         throw new ReportException(ReportErrorCode.EXCEED_LIMIT_SHEET);
                     }
                 }
@@ -377,6 +386,17 @@ public class ReportServiceImpl implements ReportService {
             throw new ReportException(ReportErrorCode.LOCK_OF_APPROVAL_ROLE);
         }
         excelInfoVO.setPath(filePath);
+        try {
+            URL url = new URL(filePath);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(5 * 1000);
+            InputStream inStream = conn.getInputStream();
+            excelInfoVO.setInputStream(inStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // 通过fileId得到reportFile的fileName
         List<ReportFile> reportFileList = reportFileMapper.createLambdaQuery()
                 .andEq(ReportFile::getReportId, reportId)
@@ -388,6 +408,7 @@ public class ReportServiceImpl implements ReportService {
         // 通过报表信息id得到节点信息和相关节点的审批用户
         List<ReportFlow> flowList = reportFlowMapper.createLambdaQuery()
                 .andEq(ReportFlow::getReportId, reportId)
+                .andEq(ReportFlow::getOperation, OperationState.AGREE.value())
                 .select();
         List<Integer> userList = new ArrayList<>();
         if (flowList.size() != 0) {
@@ -679,9 +700,10 @@ public class ReportServiceImpl implements ReportService {
 
     /**
      * 盘都某个时间是否在开始和结束时间的区间内如果在则未过期，不再则过期
+     *
      * @param startTime 开始时间
-     * @param endTime 结束时间
-     * @param time 需要比较的时间
+     * @param endTime   结束时间
+     * @param time      需要比较的时间
      * @return true 未过期 false 过期
      */
     public boolean isExpired(String startTime, String endTime, String time) {

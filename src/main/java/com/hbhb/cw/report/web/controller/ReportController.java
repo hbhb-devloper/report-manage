@@ -85,14 +85,8 @@ public class ReportController {
         ExcelInfoVO excelInfo = reportService.getExcelInfo(excelVO.getFileId(), excelVO.getReportId());
         // 获取sheet数量
         int numberOfSheets = 0;
-        InputStream inStream = null;
         try {
-            URL url = new URL(excelInfo.getPath());
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(5 * 1000);
-            inStream = conn.getInputStream();
-            XSSFWorkbook hs = new XSSFWorkbook(inStream);
+            XSSFWorkbook hs = new XSSFWorkbook(excelInfo.getInputStream());
             numberOfSheets = hs.getNumberOfSheets();
         } catch (Exception e) {
             e.printStackTrace();
@@ -102,6 +96,16 @@ public class ReportController {
         List<List> lists = new ArrayList<>();
         for (int i = 0; i < numberOfSheets; i++) {
             lists.add(list);
+        }
+        InputStream inStream = null;
+        try {
+            URL url = new URL(excelInfo.getPath());
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(5 * 1000);
+            inStream = conn.getInputStream();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         String fileName = ExcelUtil.encodingFileName(request, excelInfo.getFileName());
         EasyExcelUtil.exportManySheetWithTemplate(response, fileName, UserImageVO.class, inStream, numberOfSheets, lists);

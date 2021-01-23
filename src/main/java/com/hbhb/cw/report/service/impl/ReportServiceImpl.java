@@ -58,6 +58,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.beetl.sql.core.page.DefaultPageRequest;
 import org.beetl.sql.core.page.PageRequest;
 import org.beetl.sql.core.page.PageResult;
+import org.beetl.sql.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -238,7 +239,7 @@ public class ReportServiceImpl implements ReportService {
                 .andEq(Report::getFounder, userId)
                 .andEq(Report::getHallId, reportVO.getHallId())
                 .andEq(Report::getHasBiz, reportVO.getHasBiz())
-                .andEq(Report::getPeriodInfo, reportVO.getPeriodInfo())
+                .andEq(Report::getPeriodInfo, Query.filterNull(reportVO.getPeriodInfo()))
                 .andEq(Report::getLaunchTime, reportVO.getLaunchTime())
                 .andEq(Report::getManageId, reportVO.getManageId())
                 .andEq(Report::getPeriod, reportVO.getPeriod())
@@ -316,9 +317,11 @@ public class ReportServiceImpl implements ReportService {
                     .reportId(report.getId())
                     .userId(userId).build());
         } else {
-            reportMapper.createLambdaQuery().updateSelective(Report.builder()
-                    .id(report.getId())
-                    .state(20).build());
+            reportMapper.createLambdaQuery()
+                    .andEq(Report::getId, report.getId())
+                    .updateSelective(Report.builder()
+                            .state(31)
+                            .build());
         }
     }
 

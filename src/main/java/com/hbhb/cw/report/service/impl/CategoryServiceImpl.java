@@ -203,12 +203,14 @@ public class CategoryServiceImpl implements CategoryService {
         List<ReportProperty> properties = new ArrayList<>();
         if (!isEmpty(propertyVoList)) {
             for (PropertyVO propertyVo : propertyVoList) {
-                ReportProperty property = new ReportProperty();
-                BeanUtils.copyProperties(propertyVo, property);
-                property.setStartTime(DateUtil.string2DateYMD(propertyVo.getStartTime()));
-                property.setEndTime(DateUtil.string2DateYMD(propertyVo.getEndTime()));
-                property.setCategoryId(categoryId);
-                properties.add(property);
+                if (isEmpty(propertyVo.getId())) {
+                    ReportProperty property = new ReportProperty();
+                    BeanUtils.copyProperties(propertyVo, property);
+                    property.setStartTime(DateUtil.string2DateYMD(propertyVo.getStartTime()));
+                    property.setEndTime(DateUtil.string2DateYMD(propertyVo.getEndTime()));
+                    property.setCategoryId(categoryId);
+                    properties.add(property);
+                }
             }
             propertyMapper.insertBatch(properties);
         }

@@ -68,13 +68,14 @@ public class ManageServiceImpl implements ManageService {
 
     @Override
     public List<SelectVO> getManageName() {
-        List<ReportManage> select = manageMapper.createLambdaQuery().select();
-
+        List<ReportManage> select = manageMapper.createLambdaQuery()
+                .andEq(ReportManage::getHasEnable, true)
+                .select();
         return Optional.ofNullable(select)
                 .orElse(new ArrayList<>())
                 .stream()
                 .map(item -> SelectVO.builder()
-                        .id(Long.valueOf(item.getId()))
+                        .id(item.getId())
                         .label(item.getManageName())
                         .build())
                 .collect(Collectors.toList());

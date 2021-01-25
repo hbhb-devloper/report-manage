@@ -7,6 +7,8 @@ import lombok.Getter;
  */
 @Getter
 public enum ReportErrorCode {
+    // 该类型下的流程超过限定流程
+    EXCEED_HOMOLOGOUS_FLOW("86001", "exceed.homologous.flow"),
     // 该类型不存在流程
     NOT_EXIST_FLOW("86002", "not.exist.flow"),
     // 该类型下的流程超过限定流程

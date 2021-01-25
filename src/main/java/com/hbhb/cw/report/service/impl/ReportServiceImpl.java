@@ -52,8 +52,6 @@ import com.hbhb.cw.systemcenter.model.SysFile;
 import com.hbhb.cw.systemcenter.vo.DictVO;
 import com.hbhb.cw.systemcenter.vo.UserInfo;
 
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.beetl.sql.core.page.DefaultPageRequest;
 import org.beetl.sql.core.page.PageRequest;
@@ -62,7 +60,6 @@ import org.beetl.sql.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -126,6 +123,8 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public PageResult<ReportResVO> getReportList(ReportReqVO reportReqVO, Integer pageNum, Integer pageSize) {
         reportReqVO.setType(reportReqVO.getHallId() == null ? 1 : 2);
+        PageRequest<ReportResVO> request = DefaultPageRequest.of(pageNum, pageSize);
+        PageResult<ReportResVO> reportList = reportMapper.selectPageByCond(request, reportReqVO);
         // 周期字典
         List<DictVO> dict = dictApi.getDict(TypeCode.REPORT.value(), DictCode.REPORT_PERIOD.value());
         Map<String, String> periodMap = dict.stream().collect(Collectors.toMap(DictVO::getValue, DictVO::getLabel));
@@ -134,8 +133,6 @@ public class ReportServiceImpl implements ReportService {
         Map<String, String> stateMap = stateDict.stream().collect(Collectors.toMap(DictVO::getValue, DictVO::getLabel));
         // 人物名称
         Map<Integer, String> userMap = sysUserApi.getUserByUnitIds(reportReqVO.getUnitId());
-        PageRequest<ReportResVO> request = DefaultPageRequest.of(pageNum, pageSize);
-        PageResult<ReportResVO> reportList = reportMapper.selectPageByCond(request, reportReqVO);
         for (int i = 0; i < reportList.getList().size(); i++) {
             reportList.getList().get(i).setLineNumber(i + 1L);
             reportList.getList().get(i).setPeriodName(periodMap.get(reportList.getList().get(i).getPeriod()));
@@ -237,7 +234,7 @@ public class ReportServiceImpl implements ReportService {
         List<Report> reportList = reportMapper.createLambdaQuery()
                 .andEq(Report::getCategoryId, reportVO.getCategoryId())
                 .andEq(Report::getFounder, userId)
-                .andEq(Report::getHallId, reportVO.getHallId())
+                .andEq(Report::getHallId, Query.filterNull(reportVO.getHallId()))
                 .andEq(Report::getHasBiz, reportVO.getHasBiz())
                 .andEq(Report::getPeriodInfo, Query.filterNull(reportVO.getPeriodInfo()))
                 .andEq(Report::getLaunchTime, reportVO.getLaunchTime())
@@ -266,9 +263,14 @@ public class ReportServiceImpl implements ReportService {
                 if (".xlsx".equals(excel)) {
                     int numberOfSheets = 0;
                     try {
-                        FileInputStream finput = new FileInputStream(filePath);
-                        XSSFWorkbook hs = new XSSFWorkbook(finput);
+                        URL url = new URL(filePath);
+                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                        conn.setRequestMethod("GET");
+                        conn.setConnectTimeout(5 * 1000);
+                        InputStream inStream = conn.getInputStream();
+                        XSSFWorkbook hs = new XSSFWorkbook(inStream);
                         numberOfSheets = hs.getNumberOfSheets();
+                        inStream.close();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -278,10 +280,14 @@ public class ReportServiceImpl implements ReportService {
                 } else if (".xls".equals(excel)) {
                     int numberOfSheets = 0;
                     try {
-                        FileInputStream finput = new FileInputStream(filePath);
-                        POIFSFileSystem fs = new POIFSFileSystem(finput);
-                        HSSFWorkbook hs = new HSSFWorkbook(fs);
+                        URL url = new URL(filePath);
+                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                        conn.setRequestMethod("GET");
+                        conn.setConnectTimeout(5 * 1000);
+                        InputStream inStream = conn.getInputStream();
+                        XSSFWorkbook hs = new XSSFWorkbook(inStream);
                         numberOfSheets = hs.getNumberOfSheets();
+                        inStream.close();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -310,7 +316,7 @@ public class ReportServiceImpl implements ReportService {
                     .scope(reportVO.getHallId() == null ? 1 : 2)
                     .build());
             if (flowIds == null || flowIds.size() != 1) {
-                throw new ReportException(ReportErrorCode.EXCEED_LIMIT_FLOW);
+                throw new ReportException(ReportErrorCode.EXCEED_HOMOLOGOUS_FLOW);
             }
             toApprover(ReportInitVO.builder()
                     .flowId(flowIds.get(0))
@@ -480,7 +486,7 @@ public class ReportServiceImpl implements ReportService {
         // 第一个节点属性
         FlowNodePropVO firstNodeProp = flowProps.get(0);
         // 判断是有默认用户
-        // 如果设定了默认用户，且为当前登录用户，则有发起权限
+        // 如果设定了默认用户，且为当前登录用户，则有发起权限0 0
         if (firstNodeProp.getUserId() != null) {
             return firstNodeProp.getUserId().equals(userId);
         }

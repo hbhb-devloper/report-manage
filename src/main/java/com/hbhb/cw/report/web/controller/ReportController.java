@@ -56,6 +56,8 @@ public class ReportController {
             @Parameter(description = "页码，默认为1") @RequestParam(required = false) Integer pageNum,
             @Parameter(description = "每页数量，默认为10") @RequestParam(required = false) Integer pageSize,
             ReportReqVO reportReqVO) {
+        pageNum = pageNum == null ? 1 : pageNum;
+        pageSize = pageSize == null ? 20 : pageSize;
         return reportService.getReportList(reportReqVO, pageNum, pageSize);
     }
 

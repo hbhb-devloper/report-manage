@@ -223,7 +223,6 @@ public class ReportServiceImpl implements ReportService {
                 .founder(userId)
                 .createTime(new Date())
                 .hallId(reportVO.getHallId())
-                .hasBiz(reportVO.getHasBiz())
                 .state(10)
                 .manageId(reportVO.getManageId())
                 .period(reportVO.getPeriod())
@@ -560,7 +559,9 @@ public class ReportServiceImpl implements ReportService {
                 reportReqVO.setPeriodInfo(String.valueOf(i + 1));
                 List<ReportResVO> reportResVOList = getReportCount(reportReqVO);
                 for (ReportResVO reportResVO : reportResVOList) {
-                    reportResVO.setLaunchTime(reportResVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
+                    if (reportResVO.getLaunchTime() != null) {
+                        reportResVO.setLaunchTime(reportResVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
+                    }
                 }
                 list.addAll(reportResVOList);
             }
@@ -573,7 +574,9 @@ public class ReportServiceImpl implements ReportService {
                 reportReqVO.setPeriodInfo(String.valueOf(i + 1));
                 List<ReportResVO> reportResVOList = getReportCount(reportReqVO);
                 for (ReportResVO reportResVO : reportResVOList) {
-                    reportResVO.setLaunchTime(reportResVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
+                    if (reportResVO.getLaunchTime() != null) {
+                        reportResVO.setLaunchTime(reportResVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
+                    }
                 }
                 list.addAll(reportResVOList);
             }
@@ -586,7 +589,9 @@ public class ReportServiceImpl implements ReportService {
                 reportReqVO.setPeriodInfo(String.valueOf(i + 1));
                 List<ReportResVO> reportResVOList = getReportCount(reportReqVO);
                 for (ReportResVO reportResVO : reportResVOList) {
-                    reportResVO.setLaunchTime(reportResVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
+                    if (reportResVO.getLaunchTime() != null) {
+                        reportResVO.setLaunchTime(reportResVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
+                    }
                 }
                 list.addAll(reportResVOList);
             }
@@ -682,11 +687,13 @@ public class ReportServiceImpl implements ReportService {
         PropertyReqVO propertyReqVO = propertyReqVOList.get(0);
         if (category.getState()) {
             for (ReportResVO reportResVO : list) {
-                if (reportResVO.getState() != null && isExpired(propertyReqVO.getStartTime(),
-                        propertyReqVO.getEndTime(), DateUtil.dateToString(new Date()))) {
-                    reportResVO.setStateName("未提交");
-                } else {
-                    reportResVO.setStateName("已过期");
+                if (reportResVO.getState() == null) {
+                    if (isExpired(propertyReqVO.getStartTime(),
+                            propertyReqVO.getEndTime(), DateUtil.dateToString(new Date()))) {
+                        reportResVO.setStateName("未提交");
+                    } else {
+                        reportResVO.setStateName("已过期");
+                    }
                 }
             }
         } else {
@@ -696,6 +703,7 @@ public class ReportServiceImpl implements ReportService {
                 }
             }
         }
+        // 序号赋值
         for (int i = 0; i < list.size(); i++) {
             list.get(i).setLineNumber(i + 1L);
             list.get(i).setPeriodName(periodMap.get(list.get(i).getPeriod()));

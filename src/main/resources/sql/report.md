@@ -67,7 +67,7 @@ selectListByCond
            r.state        as state
     from report r
              left join report_manage rm on r.manage_id = rm.id
-             left join report_category rc on rm.id = rc.manage_id
+             left join report_category rc on r.category_id = rc.id
     where r.type = #{cond.type}
     -- @if(isNotEmpty(cond.unitId)){
       and r.unit_id = #{cond.unitId}

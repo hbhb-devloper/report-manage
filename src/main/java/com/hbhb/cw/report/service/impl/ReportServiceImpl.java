@@ -559,9 +559,7 @@ public class ReportServiceImpl implements ReportService {
                 reportReqVO.setPeriodInfo(String.valueOf(i + 1));
                 List<ReportResVO> reportResVOList = getReportCount(reportReqVO);
                 for (ReportResVO reportResVO : reportResVOList) {
-                    if (reportResVO.getLaunchTime() != null) {
-                        reportResVO.setLaunchTime(reportResVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
-                    }
+                    reportResVO.setLaunchTime(reportReqVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
                 }
                 list.addAll(reportResVOList);
             }
@@ -574,9 +572,7 @@ public class ReportServiceImpl implements ReportService {
                 reportReqVO.setPeriodInfo(String.valueOf(i + 1));
                 List<ReportResVO> reportResVOList = getReportCount(reportReqVO);
                 for (ReportResVO reportResVO : reportResVOList) {
-                    if (reportResVO.getLaunchTime() != null) {
-                        reportResVO.setLaunchTime(reportResVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
-                    }
+                    reportResVO.setLaunchTime(reportReqVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
                 }
                 list.addAll(reportResVOList);
             }
@@ -589,9 +585,7 @@ public class ReportServiceImpl implements ReportService {
                 reportReqVO.setPeriodInfo(String.valueOf(i + 1));
                 List<ReportResVO> reportResVOList = getReportCount(reportReqVO);
                 for (ReportResVO reportResVO : reportResVOList) {
-                    if (reportResVO.getLaunchTime() != null) {
-                        reportResVO.setLaunchTime(reportResVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
-                    }
+                    reportResVO.setLaunchTime(reportReqVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
                 }
                 list.addAll(reportResVOList);
             }

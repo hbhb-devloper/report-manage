@@ -591,6 +591,9 @@ public class ReportServiceImpl implements ReportService {
             }
         } else {
             list = getReportCount(reportReqVO);
+            for (ReportResVO reportResVO : list) {
+                reportResVO.setLaunchTime(reportReqVO.getLaunchTime());
+            }
         }
         return list;
     }

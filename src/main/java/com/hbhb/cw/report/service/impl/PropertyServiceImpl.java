@@ -146,6 +146,8 @@ public class PropertyServiceImpl implements PropertyService {
                         .id(Long.valueOf(item.getPeriod()))
                         .label(periodMap.get(item.getPeriod().toString()))
                         .build())
+                .distinct()
                 .collect(Collectors.toList());
+
     }
 }

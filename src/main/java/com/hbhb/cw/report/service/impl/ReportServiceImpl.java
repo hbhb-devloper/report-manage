@@ -70,7 +70,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -603,25 +602,26 @@ public class ReportServiceImpl implements ReportService {
      */
     private List<ReportResVO> getReportCount(ReportReqVO reportReqVO) {
         reportReqVO.setType(reportReqVO.getHallId() == null ? 1 : 2);
-        // 得到所有营业厅
-        Map<Integer, String> hallMap = hallApi.selectHallByUnitId(reportReqVO.getUnitId());
         // 得到报表内容详情
         ReportManage manage = reportManageMapper.single(reportReqVO.getManageId());
         // 得到报表名称详情
         ReportCategory category = reportCategoryMapper.single(reportReqVO.getCategoryId());
         // 获取所有单位
-        List<Integer> unitIds = unitApi.getAllUnitId();
+        List<Integer> unitIds = unitApi.getSubUnit(reportReqVO.getUnitId());
         Map<Integer, String> unitMap = unitApi.getUnitMapById();
 
-        List<ReportResVO> list = reportMapper.selectListByCond(reportReqVO);
+        List<ReportResVO> list = new ArrayList<>();
         // 如果为单位
         if (reportReqVO.getHallId() == null) {
+            list = reportMapper.selectListByCond(reportReqVO);
             // unitId => ReportResVO
-            Map<Integer, ReportResVO> map = list.stream()
-                    .collect(Collectors.toMap(ReportResVO::getUnitId, Function.identity()));
+            Map<String, ReportResVO> map = new HashMap<>();
+            for (ReportResVO reportResVO : list) {
+                map.put(reportReqVO.getUnitId() + reportReqVO.getPeriodInfo(), reportResVO);
+            }
             // 判断是否通过
             for (Integer unitId : unitIds) {
-                if (map.get(unitId) == null) {
+                if (map.get(unitId + reportReqVO.getPeriodInfo()) == null) {
                     list.add(ReportResVO.builder()
                             .manageName(manage.getManageName())
                             .reportName(category.getReportName())
@@ -638,12 +638,16 @@ public class ReportServiceImpl implements ReportService {
             }
             // 如果为营业厅
         } else {
-            // hallId => ReportResVO
-            Map<Long, ReportResVO> map = list.stream()
-                    .collect(Collectors.toMap(ReportResVO::getHallId, Function.identity()));
+            // 得到所有营业厅
+            Map<Integer, String> hallMap = hallApi.selectHallByUnitId(reportReqVO.getUnitId());
+            // unitId => ReportResVO
+            Map<String, ReportResVO> map = new HashMap<>();
+            for (ReportResVO reportResVO : list) {
+                map.put(reportReqVO.getHallId() + reportReqVO.getPeriodInfo(), reportResVO);
+            }
             // 判断是否通过
             for (Integer hallId : hallMap.keySet()) {
-                if (map.get(Long.valueOf(hallId)) == null) {
+                if (map.get(hallId + reportReqVO.getPeriodInfo()) == null) {
                     list.add(ReportResVO.builder()
                             .manageName(manage.getManageName())
                             .reportName(category.getReportName())

@@ -77,7 +77,7 @@ public class ReportController {
 
     @Operation(summary = "添加报表信息")
     @DeleteMapping("/move")
-    public void moveReport(List<Long> list) {
+    public void moveReport(@RequestBody List<Long> list) {
         reportService.moveReportList(list);
     }
 

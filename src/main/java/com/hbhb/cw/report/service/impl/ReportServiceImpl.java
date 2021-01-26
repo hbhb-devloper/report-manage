@@ -193,7 +193,7 @@ public class ReportServiceImpl implements ReportService {
         // 分页
         return ReportCountResVO.builder()
                 .list(list.stream().sorted(Comparator.comparing(ReportResVO::getLineNumber))
-                        .skip((pageNum) * (pageSize - 1)).limit(pageSize - 1).collect(Collectors.toList()))
+                        .skip((pageNum) * (pageSize - 1)).limit(pageSize).collect(Collectors.toList()))
                 .total(list.size())
                 .build();
     }
@@ -222,6 +222,7 @@ public class ReportServiceImpl implements ReportService {
                 .unitId(reportVO.getUnitId())
                 .founder(userId)
                 .createTime(new Date())
+                .hasBiz(reportVO.getHasBiz())
                 .hallId(reportVO.getHallId())
                 .state(10)
                 .manageId(reportVO.getManageId())
@@ -234,7 +235,6 @@ public class ReportServiceImpl implements ReportService {
                 .andEq(Report::getCategoryId, reportVO.getCategoryId())
                 .andEq(Report::getFounder, userId)
                 .andEq(Report::getHallId, Query.filterNull(reportVO.getHallId()))
-                .andEq(Report::getHasBiz, reportVO.getHasBiz())
                 .andEq(Report::getPeriodInfo, Query.filterNull(reportVO.getPeriodInfo()))
                 .andEq(Report::getLaunchTime, reportVO.getLaunchTime())
                 .andEq(Report::getManageId, reportVO.getManageId())

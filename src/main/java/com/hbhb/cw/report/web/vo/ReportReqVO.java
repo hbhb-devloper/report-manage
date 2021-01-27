@@ -1,6 +1,7 @@
 package com.hbhb.cw.report.web.vo;
 
 import java.io.Serializable;
+import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -54,4 +55,8 @@ public class ReportReqVO implements Serializable {
 
     @Schema(description = "报表类型（0-分公司报表信息，1-营业厅报表类型）")
     private Integer type;
+
+    private List<Integer> unitIds;
+
+    private List<Long> hallIds;
 }

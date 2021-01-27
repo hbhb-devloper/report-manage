@@ -31,17 +31,17 @@ public interface ReportService {
     /**
      * 报表管理上传统计
      */
-    ReportCountResVO getReportCountList(ReportReqVO reportReqVO, Integer pageNum, Integer pageSize);
+    ReportCountResVO getReportCountList(ReportReqVO reportReqVO, Integer pageNum, Integer pageSize, Integer userId);
 
     /**
      * 报表管理上传统计导出(营业厅)
      */
-    List<ReportCountHallExportVO> getReportCountHallExcel(ReportReqVO reportReqVO);
+    List<ReportCountHallExportVO> getReportCountHallExcel(ReportReqVO reportReqVO, Integer userId);
 
     /**
      * 报表管理上传统计导出(单位)
      */
-    List<ReportCountUnitExportVO> getReportCountUnitExcel(ReportReqVO reportReqVO);
+    List<ReportCountUnitExportVO> getReportCountUnitExcel(ReportReqVO reportReqVO, Integer userId);
 
     /**
      * 新增报表信息

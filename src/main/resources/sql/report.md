@@ -69,11 +69,11 @@ selectListByCond
              left join report_manage rm on r.manage_id = rm.id
              left join report_category rc on r.category_id = rc.id
     where r.type = #{cond.type}
-    -- @if(isNotEmpty(cond.unitId)){
-      and r.unit_id = #{cond.unitId}
+    -- @if(isNotEmpty(cond.unitIds)){
+      and r.unit_id in (#{join(unitIds)})
     -- @}
-    -- @if(isNotEmpty(cond.hallId)){
-      and r.hall_id = #{cond.hallId}
+    -- @if(isNotEmpty(cond.hallIds)){
+      and r.hall_id in (#{join(hallIds)})
     -- @}
     -- @if(isNotEmpty(cond.manageId)){
       and r.manage_id = #{cond.manageId}

@@ -1,5 +1,6 @@
 package com.hbhb.cw.report.service.impl;
 
+import com.hbhb.api.core.bean.SelectVO;
 import com.hbhb.core.bean.BeanConverter;
 import com.hbhb.core.utils.DateUtil;
 import com.hbhb.cw.flowcenter.enums.FlowNodeNoticeState;
@@ -70,6 +71,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -187,8 +189,8 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public ReportCountResVO getReportCountList(ReportReqVO reportReqVO, Integer pageNum, Integer pageSize) {
-        List<ReportResVO> list = getReportInfoList(reportReqVO);
+    public ReportCountResVO getReportCountList(ReportReqVO reportReqVO, Integer userId, Integer pageNum, Integer pageSize) {
+        List<ReportResVO> list = getReportInfoList(reportReqVO, userId);
         // 分页
         return ReportCountResVO.builder()
                 .list(list.stream().sorted(Comparator.comparing(ReportResVO::getLineNumber))
@@ -198,15 +200,15 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<ReportCountHallExportVO> getReportCountHallExcel(ReportReqVO reportReqVO) {
-        List<ReportResVO> list = getReportInfoList(reportReqVO);
+    public List<ReportCountHallExportVO> getReportCountHallExcel(ReportReqVO reportReqVO, Integer userId) {
+        List<ReportResVO> list = getReportInfoList(reportReqVO, userId);
         list.stream().sorted(Comparator.comparing(ReportResVO::getLineNumber));
         return BeanConverter.copyBeanList(list, ReportCountHallExportVO.class);
     }
 
     @Override
-    public List<ReportCountUnitExportVO> getReportCountUnitExcel(ReportReqVO reportReqVO) {
-        List<ReportResVO> list = getReportInfoList(reportReqVO);
+    public List<ReportCountUnitExportVO> getReportCountUnitExcel(ReportReqVO reportReqVO, Integer userId) {
+        List<ReportResVO> list = getReportInfoList(reportReqVO, userId);
         list.stream().sorted(Comparator.comparing(ReportResVO::getLineNumber));
         return BeanConverter.copyBeanList(list, ReportCountUnitExportVO.class);
     }
@@ -249,7 +251,6 @@ public class ReportServiceImpl implements ReportService {
         if (files != null && files.size() != 0) {
             List<ReportFile> reportFiles = new ArrayList<>();
             for (ReportFileVO file : files) {
-
                 SysFile fileInfo = fileApiExp.getFileInfo(Math.toIntExact(file.getFileId()));
                 String filePath = fileInfo.getFilePath();
                 if (filePath == null) {
@@ -548,7 +549,7 @@ public class ReportServiceImpl implements ReportService {
     /**
      * 得到通过条件得到上传统计list
      */
-    private List<ReportResVO> getReportInfoList(ReportReqVO reportReqVO) {
+    private List<ReportResVO> getReportInfoList(ReportReqVO reportReqVO, Integer userId) {
         List<ReportResVO> list = new ArrayList<>();
         // 旬时没选择旬详细
         if ("1".equals(reportReqVO.getPeriod()) && reportReqVO.getPeriodInfo() == null) {
@@ -556,7 +557,7 @@ public class ReportServiceImpl implements ReportService {
             Map<String, String> periodMap = stateDict.stream().collect(Collectors.toMap(DictVO::getValue, DictVO::getLabel));
             for (int i = 0; i < 3; i++) {
                 reportReqVO.setPeriodInfo(String.valueOf(i + 1));
-                List<ReportResVO> reportResVOList = getReportCount(reportReqVO);
+                List<ReportResVO> reportResVOList = getReportCount(reportReqVO, userId);
                 for (ReportResVO reportResVO : reportResVOList) {
                     reportResVO.setLaunchTime(reportReqVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
                 }
@@ -569,7 +570,7 @@ public class ReportServiceImpl implements ReportService {
             Map<String, String> periodMap = stateDict.stream().collect(Collectors.toMap(DictVO::getValue, DictVO::getLabel));
             for (int i = 0; i < 4; i++) {
                 reportReqVO.setPeriodInfo(String.valueOf(i + 1));
-                List<ReportResVO> reportResVOList = getReportCount(reportReqVO);
+                List<ReportResVO> reportResVOList = getReportCount(reportReqVO, userId);
                 for (ReportResVO reportResVO : reportResVOList) {
                     reportResVO.setLaunchTime(reportReqVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
                 }
@@ -582,14 +583,14 @@ public class ReportServiceImpl implements ReportService {
             Map<String, String> periodMap = stateDict.stream().collect(Collectors.toMap(DictVO::getValue, DictVO::getLabel));
             for (int i = 0; i < 2; i++) {
                 reportReqVO.setPeriodInfo(String.valueOf(i + 1));
-                List<ReportResVO> reportResVOList = getReportCount(reportReqVO);
+                List<ReportResVO> reportResVOList = getReportCount(reportReqVO, userId);
                 for (ReportResVO reportResVO : reportResVOList) {
                     reportResVO.setLaunchTime(reportReqVO.getLaunchTime() + periodMap.get(String.valueOf(i + 1)));
                 }
                 list.addAll(reportResVOList);
             }
         } else {
-            list = getReportCount(reportReqVO);
+            list = getReportCount(reportReqVO, userId);
             for (ReportResVO reportResVO : list) {
                 reportResVO.setLaunchTime(reportReqVO.getLaunchTime());
             }
@@ -600,7 +601,7 @@ public class ReportServiceImpl implements ReportService {
     /**
      * 通过条件得到上传统计list
      */
-    private List<ReportResVO> getReportCount(ReportReqVO reportReqVO) {
+    private List<ReportResVO> getReportCount(ReportReqVO reportReqVO, Integer userId) {
         reportReqVO.setType(reportReqVO.getHallId() == null ? 1 : 2);
         // 得到报表内容详情
         ReportManage manage = reportManageMapper.single(reportReqVO.getManageId());
@@ -608,6 +609,7 @@ public class ReportServiceImpl implements ReportService {
         ReportCategory category = reportCategoryMapper.single(reportReqVO.getCategoryId());
         // 获取所有单位
         List<Integer> unitIds = unitApi.getSubUnit(reportReqVO.getUnitId());
+        reportReqVO.setUnitIds(unitIds);
         Map<Integer, String> unitMap = unitApi.getUnitMapById();
 
         List<ReportResVO> list = new ArrayList<>();
@@ -638,29 +640,42 @@ public class ReportServiceImpl implements ReportService {
             }
             // 如果为营业厅
         } else {
-            // 得到所有营业厅
-            Map<Integer, String> hallMap = hallApi.selectHallByUnitId(reportReqVO.getUnitId());
+            List<Long> hallIds;
+            // 得到改用户下所有营业厅
+            List<SelectVO> selectVOS = hallApi.selectHallByUserId(userId);
+            // hallId => hallName
+            Map<Long, String> hallMap = selectVOS.stream().collect(Collectors.toMap(SelectVO::getId, SelectVO::getLabel));
+            if (reportReqVO.getHallId() == 0L) {
+                hallIds = new ArrayList<>();
+                Set<Long> hallIdSets = hallMap.keySet();
+                hallIds.addAll(hallIdSets);
+            } else {
+                hallIds = new ArrayList<>();
+                hallIds.add(reportReqVO.getHallId());
+            }
+            reportReqVO.setHallIds(hallIds);
+            list = reportMapper.selectListByCond(reportReqVO);
             // unitId => ReportResVO
             Map<String, ReportResVO> map = new HashMap<>();
             for (ReportResVO reportResVO : list) {
                 map.put(reportReqVO.getHallId() + reportReqVO.getPeriodInfo(), reportResVO);
             }
             // 判断是否通过
-            for (Integer hallId : hallMap.keySet()) {
+            for (Long hallId : hallMap.keySet()) {
                 if (map.get(hallId + reportReqVO.getPeriodInfo()) == null) {
                     list.add(ReportResVO.builder()
                             .manageName(manage.getManageName())
                             .reportName(category.getReportName())
                             .relationName(manage.getManageName() + category.getReportName())
                             .hasBiz(reportReqVO.getHasBiz())
-                            .hallId(Long.valueOf(hallId))
+                            .hallId(hallId)
                             .period(reportReqVO.getPeriod())
                             .build());
                 }
             }
             for (int i = 0; i < list.size(); i++) {
                 list.get(i).setLineNumber(i + 1L);
-                list.get(i).setHallName(hallMap.get(Math.toIntExact(list.get(i).getHallId())));
+                list.get(i).setHallName(hallMap.get(list.get(i).getHallId()));
             }
         }
         // 周期字典

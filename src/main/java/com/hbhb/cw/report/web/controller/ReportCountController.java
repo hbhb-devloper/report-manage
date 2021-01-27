@@ -6,6 +6,7 @@ import com.hbhb.cw.report.web.vo.ReportCountHallExportVO;
 import com.hbhb.cw.report.web.vo.ReportCountResVO;
 import com.hbhb.cw.report.web.vo.ReportCountUnitExportVO;
 import com.hbhb.cw.report.web.vo.ReportReqVO;
+import com.hbhb.web.annotation.UserId;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,23 +44,25 @@ public class ReportCountController {
     public ReportCountResVO getReportList(
             @Parameter(description = "页码，默认为1") @RequestParam(required = false) Integer pageNum,
             @Parameter(description = "每页数量，默认为10") @RequestParam(required = false) Integer pageSize,
-            ReportReqVO reportReqVO) {
+            ReportReqVO reportReqVO,
+            @Parameter(hidden = true) @UserId Integer userId) {
         pageNum = pageNum == null ? 0 : pageNum - 1;
         pageSize = pageSize == null ? 20 : pageSize;
-        return reportService.getReportCountList(reportReqVO, pageNum, pageSize);
+        return reportService.getReportCountList(reportReqVO, pageNum, pageSize, userId);
     }
 
     @Operation(summary = "导出")
     @PostMapping("/export")
     public void exportBusiness(HttpServletRequest request, HttpServletResponse response,
-                               @Parameter(description = "条件") @RequestBody ReportReqVO reportReqVO) {
+                               @Parameter(description = "条件") @RequestBody ReportReqVO reportReqVO,
+                               @Parameter(hidden = true) @UserId Integer userId) {
         ;
         if (reportReqVO.getHallId() == null) {
-            List<ReportCountUnitExportVO> list = reportService.getReportCountUnitExcel(reportReqVO);
+            List<ReportCountUnitExportVO> list = reportService.getReportCountUnitExcel(reportReqVO, userId);
             String fileName = ExcelUtil.encodingFileName(request, "报表上传统计");
             ExcelUtil.export2Web(response, fileName, fileName, ReportCountUnitExportVO.class, list);
         } else {
-            List<ReportCountHallExportVO> list = reportService.getReportCountHallExcel(reportReqVO);
+            List<ReportCountHallExportVO> list = reportService.getReportCountHallExcel(reportReqVO, userId);
             String fileName = ExcelUtil.encodingFileName(request, "报表上传统计");
             ExcelUtil.export2Web(response, fileName, fileName, ReportCountHallExportVO.class, list);
         }

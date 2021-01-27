@@ -201,14 +201,14 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public ReportCountResVO getReportCountList(ReportReqVO reportReqVO, Integer userId, Integer pageNum, Integer pageSize) {
+    public ReportCountResVO getReportCountList(ReportReqVO reportReqVO, Integer pageNum, Integer pageSize, Integer userId) {
         List<ReportResVO> list = getReportInfoList(reportReqVO, userId);
         // 分页
-        return ReportCountResVO.builder()
-                .list(list.stream().sorted(Comparator.comparing(ReportResVO::getLineNumber))
-                        .skip((pageNum) * (pageSize - 1)).limit(pageSize).collect(Collectors.toList()))
-                .total(list.size())
-                .build();
+        ReportCountResVO res = new ReportCountResVO();
+        res.setList(list.stream().sorted(Comparator.comparing(ReportResVO::getUnitId))
+                .skip((pageNum) * (pageSize - 1)).limit(pageSize - 1).collect(Collectors.toList()));
+        res.setTotal(list.size());
+        return res;
     }
 
     @Override
@@ -617,8 +617,14 @@ public class ReportServiceImpl implements ReportService {
         reportReqVO.setType(reportReqVO.getHallId() == null ? 1 : 2);
         // 得到报表内容详情
         ReportManage manage = reportManageMapper.single(reportReqVO.getManageId());
+        if (manage == null) {
+            return new ArrayList<>();
+        }
         // 得到报表名称详情
         ReportCategory category = reportCategoryMapper.single(reportReqVO.getCategoryId());
+        if (category == null) {
+            return new ArrayList<>();
+        }
         // 获取所有单位
         List<Integer> unitIds = unitApi.getSubUnit(reportReqVO.getUnitId());
         reportReqVO.setUnitIds(unitIds);
@@ -631,7 +637,7 @@ public class ReportServiceImpl implements ReportService {
             // unitId => ReportResVO
             Map<String, ReportResVO> map = new HashMap<>();
             for (ReportResVO reportResVO : list) {
-                map.put(reportReqVO.getUnitId() + reportReqVO.getPeriodInfo(), reportResVO);
+                map.put(reportResVO.getUnitId() + reportReqVO.getPeriodInfo(), reportResVO);
             }
             // 判断是否通过
             for (Integer unitId : unitIds) {
@@ -650,6 +656,7 @@ public class ReportServiceImpl implements ReportService {
                 list.get(i).setLineNumber(i + 1L);
                 list.get(i).setUnitName(unitMap.get(list.get(i).getUnitId()));
             }
+            map.clear();
             // 如果为营业厅
         } else {
             List<Long> hallIds;
@@ -657,7 +664,7 @@ public class ReportServiceImpl implements ReportService {
             List<SelectVO> selectVOS = hallApi.selectHallByUserId(userId);
             // hallId => hallName
             Map<Long, String> hallMap = selectVOS.stream().collect(Collectors.toMap(SelectVO::getId, SelectVO::getLabel));
-            if (reportReqVO.getHallId() == 0L) {
+            if (reportReqVO.getHallId() == 0) {
                 hallIds = new ArrayList<>();
                 Set<Long> hallIdSets = hallMap.keySet();
                 hallIds.addAll(hallIdSets);
@@ -689,6 +696,7 @@ public class ReportServiceImpl implements ReportService {
                 list.get(i).setLineNumber(i + 1L);
                 list.get(i).setHallName(hallMap.get(list.get(i).getHallId()));
             }
+            map.clear();
         }
         // 周期字典
         List<DictVO> dict = dictApi.getDict(TypeCode.REPORT.value(), DictCode.REPORT_PERIOD.value());

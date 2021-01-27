@@ -122,8 +122,20 @@ public class ReportServiceImpl implements ReportService {
     private SysDictApiExp dictApi;
 
     @Override
-    public PageResult<ReportResVO> getReportList(ReportReqVO reportReqVO, Integer pageNum, Integer pageSize) {
+    public PageResult<ReportResVO> getReportList(ReportReqVO reportReqVO, Integer pageNum, Integer pageSize, Integer userId) {
         reportReqVO.setType(reportReqVO.getHallId() == null ? 1 : 2);
+        List<Long> hallIds = new ArrayList<>();
+        if (reportReqVO.getHallId() != null && reportReqVO.getHallId() == 0L) {
+            List<SelectVO> selectVOS = hallApi.selectHallByUserId(userId);
+            selectVOS.forEach(vo -> hallIds.add(vo.getId()));
+            reportReqVO.setHallIds(hallIds);
+        } else if (reportReqVO.getHallId() != null) {
+            hallIds.add(reportReqVO.getHallId());
+            reportReqVO.setHallIds(hallIds);
+        }
+        // 得到所有id
+        List<Integer> unitIds = unitApi.getSubUnit(reportReqVO.getUnitId());
+        reportReqVO.setUnitIds(unitIds);
         PageRequest<ReportResVO> request = DefaultPageRequest.of(pageNum, pageSize);
         PageResult<ReportResVO> reportList = reportMapper.selectPageByCond(request, reportReqVO);
         // 周期字典
@@ -427,7 +439,7 @@ public class ReportServiceImpl implements ReportService {
         // userId => image
         Map<Integer, String> map = sysUserApi.getUserSignature(userList);
         UserImageVO userImageVO = new UserImageVO();
-        // 获取图片赋值
+        // 获取图片赋值   (五个节点)
         if (flowList.size() != 0) {
             userImageVO.setFirstName(flowList.get(0).getRoleDesc());
             try {

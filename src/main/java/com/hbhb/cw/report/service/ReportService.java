@@ -21,7 +21,7 @@ public interface ReportService {
     /**
      * 报表信息列表
      */
-    PageResult<ReportResVO> getReportList(ReportReqVO reportReqVO, Integer pageNum, Integer pageSize);
+    PageResult<ReportResVO> getReportList(ReportReqVO reportReqVO, Integer pageNum, Integer pageSize, Integer userId);
 
     /**
      * 附件详情

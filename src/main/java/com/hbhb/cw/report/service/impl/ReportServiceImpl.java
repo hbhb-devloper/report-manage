@@ -205,8 +205,11 @@ public class ReportServiceImpl implements ReportService {
         List<ReportResVO> list = getReportInfoList(reportReqVO, userId);
         // 分页
         ReportCountResVO res = new ReportCountResVO();
-        res.setList(list.stream().sorted(Comparator.comparing(ReportResVO::getUnitId))
-                .skip((pageNum) * (pageSize)).limit(pageSize).collect(Collectors.toList()));
+        if (list == null || list.size() == 0) {
+            return new ReportCountResVO();
+        }
+        res.setList(list.stream().sorted(Comparator.comparing(ReportResVO::getLineNumber))
+                .skip((pageNum) * (pageSize - 1)).limit(pageSize).collect(Collectors.toList()));
         res.setTotal(list.size());
         return res;
     }

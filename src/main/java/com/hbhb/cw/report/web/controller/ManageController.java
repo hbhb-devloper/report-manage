@@ -62,5 +62,4 @@ public class ManageController {
         return manageService.getManageName();
     }
 
-
 }

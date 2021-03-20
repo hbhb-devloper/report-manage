@@ -67,7 +67,7 @@ spring:
   profiles: default
   cloud:
     consul:
-      host: consul.yeexun.com.cn
+      host: consul.iishoni.com
       discovery:
 #        prefer-ip-address: true
         instance-id: ${spring.application.name}-${server.port}-${spring.cloud.client.ip-address}
@@ -83,7 +83,7 @@ spring:
   profiles: dev
   cloud:
     consul:
-      host: consul.yeexun.com.cn
+      host: consul.iishoni.com
       discovery:
         instance-id: ${spring.application.name}-${port.dev}-${spring.cloud.client.ip-address}
         service-name: ${spring.application.name}
@@ -97,14 +97,14 @@ spring:
   profiles: test
   cloud:
     consul:
-      host: consul.yeexun.com.cn
+      host: consul.iishoni.com
       discovery:
         instance-id: ${spring.application.name}-${port.test}-${spring.cloud.client.ip-address}
         service-name: ${spring.application.name}
         health-check-url: http://${host.docker0}:${port.test}/actuator/health
         # 测试环境使用代理ip
-        hostname: ${host.proxy}
-        port: ${port.test-proxy}
+        hostname: ${host.docker0}
+        port: ${port.test}
 ################### 正式环境配置 ###################
 ---
 spring:

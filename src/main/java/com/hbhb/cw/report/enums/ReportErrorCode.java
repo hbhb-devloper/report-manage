@@ -7,6 +7,8 @@ import lombok.Getter;
  */
 @Getter
 public enum ReportErrorCode {
+    // 该类型下的流程超过限定流程
+    EXCEED_HOMOLOGOUS_FLOW("86001", "exceed.homologous.flow"),
     // 该类型不存在流程
     NOT_EXIST_FLOW("86002", "not.exist.flow"),
     // 该类型下的流程超过限定流程
@@ -22,7 +24,12 @@ public enum ReportErrorCode {
     // 请指定所有审批人
     NOT_ALL_APPROVERS_ASSIGNED("86009", "not.all.approvers.assigned"),
     // 下一节点未指定审批人，请联系管理员
-    NEXT_NODE_NO_USER("86010", "next.node.no.user"),;
+    NEXT_NODE_NO_USER("86010", "next.node.no.user"),
+    // 该条报表信息已存在请勿重复上传
+    IS_ALREADY_EXISTENCE("86010", "is.already.existence"),
+    // Excel的sheet数量超过限定范围
+    EXCEED_LIMIT_SHEET("86011", "exceed.limit.sheet"),
+    ;
 
     private String code;
 

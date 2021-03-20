@@ -10,19 +10,20 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author wangxiaogang
+ * @author yzc
+ * @since 2021-01-11
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReportVO implements Serializable {
-    private static final long serialVersionUID = 5848407463211510961L;
+public class ReportReqVO implements Serializable {
+    private static final long serialVersionUID = -4592981921549286107L;
 
     @Schema(description = "上报单位")
     private Integer unitId;
 
-    @Schema(description = "上报营业厅")
+    @Schema(description = "营业厅id")
     private Long hallId;
 
     @Schema(description = "管理内容Id")
@@ -31,28 +32,31 @@ public class ReportVO implements Serializable {
     @Schema(description = "报表名称")
     private Long categoryId;
 
-    @Schema(description = "报表状态")
-    private Integer state;
-
-    @Schema(description = "有无业务")
+    @Schema(description = "有误业务")
     private Boolean hasBiz;
+
+    @Schema(description = "报表状态")
+    private Integer categoryState;
+
+    @Schema(description = "流程状态")
+    private String state;
 
     @Schema(description = "周期")
     private String period;
 
-    @Schema(description = "周期详情")
+    @Schema(description = "周期详细")
     private String periodInfo;
 
     @Schema(description = "上传时间")
     private String launchTime;
 
+    @Schema(description = "关联单名称(管理内容+报表名称+“审批流程”)")
+    private String relationName;
+
     @Schema(description = "报表类型（0-分公司报表信息，1-营业厅报表类型）")
     private Integer type;
 
-    @Schema(description = "流程类型id")
-    Long flowTypeId;
+    private List<Integer> unitIds;
 
-    @Schema(description = "附件")
-    private List<ReportFileVO> files;
-
+    private List<Long> hallIds;
 }
